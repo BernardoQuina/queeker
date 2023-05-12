@@ -1,0 +1,27 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1683915258564,
+      "tag": "0000_tired_medusa",
+      "breakpoints": false
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1683929743191,
+      "tag": "0001_perfect_madripoor",
+      "breakpoints": false
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1683930363271,
+      "tag": "0002_glossy_reavers",
+      "breakpoints": true
+    }
+  ]
+}

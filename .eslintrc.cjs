@@ -43,6 +43,7 @@ module.exports = {
     'import/order': 'error',
     'prettier/prettier': ['error', { singleQuote: true, endOfLine: 'auto' }],
   },
+  overrides: [{ excludedFiles: 'drizzle.config.ts' }],
   settings: {
     'import/resolver': {
       node: true,
