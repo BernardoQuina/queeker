@@ -22,6 +22,27 @@
       "when": 1683930363271,
       "tag": "0002_glossy_reavers",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1683933413804,
+      "tag": "0003_outstanding_shaman",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1683934404789,
+      "tag": "0004_nifty_hawkeye",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1683934465015,
+      "tag": "0005_windy_stardust",
+      "breakpoints": true
     }
   ]
 }
