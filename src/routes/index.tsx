@@ -1,70 +1,32 @@
-import { component$, useSignal, useStore } from '@builder.io/qwik'
-import { type DocumentHead, routeLoader$, z, server$ } from '@builder.io/qwik-city'
-import { desc, eq } from 'drizzle-orm'
+import { component$, useStore } from '@builder.io/qwik'
+import { type DocumentHead, routeLoader$ } from '@builder.io/qwik-city'
+import { desc } from 'drizzle-orm'
 
 import { posts } from '../db/schema'
 import { getDb } from '../db/db'
+import Header from '../components/home/Header'
+import PostForm from '../components/home/PostForm'
+import { useAuthSession } from './plugin@auth'
 
 export const usePosts = routeLoader$(async (reqEvent) => {
-  try {
-    const db = getDb(reqEvent)
+  const db = getDb(reqEvent)
 
-    const allPosts = await db.select().from(posts).orderBy(desc(posts.createdAt))
+  const allPosts = await db.select().from(posts).orderBy(desc(posts.createdAt))
 
-    return allPosts
-  } catch (error) {
-    console.log(error)
-  }
-})
-
-const postInput = z.object({
-  content: z.string(),
-})
-
-type PostInput = z.infer<typeof postInput>
-
-export const addPost = server$(async function (post: PostInput) {
-  const db = getDb({ env: this.env })
-
-  const newPostQuery = await db.insert(posts).values({
-    content: post.content,
-    userId: 1,
-  })
-
-  const newPost = await db
-    .select()
-    .from(posts)
-    .where(eq(posts.id, parseInt(newPostQuery.insertId)))
-
-  return { success: true, data: newPost[0] }
+  return allPosts
 })
 
 export default component$(() => {
   const postsSignal = usePosts()
 
-  if (!postsSignal.value) return <div>not possible to retrieve posts</div>
-
   const posts = useStore(postsSignal.value)
 
-  const content = useSignal('')
+  const session = useAuthSession()
 
   return (
     <div>
-      <h1>hello Qwik</h1>
-      <h4>posts served with drizzled from planetscale:</h4>
-      <form
-        onSubmit$={async () => {
-          const newPost = await addPost({ content: content.value })
-
-          content.value = ''
-
-          posts.unshift(newPost.data)
-        }}
-        preventdefault:submit
-      >
-        <input bind:value={content} />
-        <button type="submit">Post</button>
-      </form>
+      <Header />
+      {session.value?.user && <PostForm posts={posts} />}
       {posts.map((post) => (
         <div key={post.id}>{post.content}</div>
       ))}
@@ -73,11 +35,11 @@ export default component$(() => {
 })
 
 export const head: DocumentHead = {
-  title: 'Welcome to Qwik',
+  title: 'Home | Qwik Drizzle Tweet',
   meta: [
     {
-      name: 'description',
-      content: 'Qwik site description',
+      name: 'Qwik Drizzle Tweet home page',
+      content: 'A twitter clone built with Qwik and Drizzle ORM',
     },
   ],
 }

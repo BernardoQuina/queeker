@@ -1,3 +1,4 @@
+import type { InferModel } from 'drizzle-orm'
 import {
   int,
   mysqlTable,
@@ -23,9 +24,13 @@ export const users = mysqlTable(
   })
 )
 
+export type User = InferModel<typeof users>
+
 export const posts = mysqlTable('posts', {
   id: serial('id').primaryKey(),
   content: text('content').notNull(),
   userId: int('user_id').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })
+
+export type Post = InferModel<typeof posts>
