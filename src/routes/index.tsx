@@ -6,11 +6,15 @@ import { posts } from '../db/schema'
 import { getDb } from '../db/db'
 
 export const usePosts = routeLoader$(async (reqEvent) => {
-  const db = getDb(reqEvent)
+  try {
+    const db = getDb(reqEvent)
 
-  const allPosts = await db.select().from(posts).orderBy(desc(posts.createdAt))
+    const allPosts = await db.select().from(posts).orderBy(desc(posts.createdAt))
 
-  return allPosts
+    return allPosts
+  } catch (error) {
+    console.log(error)
+  }
 })
 
 const postInput = z.object({
@@ -37,6 +41,9 @@ export const addPost = server$(async function (post: PostInput) {
 
 export default component$(() => {
   const postsSignal = usePosts()
+
+  if (!postsSignal.value) return <div>not possible to retrieve posts</div>
+
   const posts = useStore(postsSignal.value)
 
   const content = useSignal('')

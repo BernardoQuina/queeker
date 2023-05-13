@@ -9,18 +9,19 @@
     "build": "qwik build",
     "build.client": "vite build",
     "build.preview": "vite build --ssr src/entry.preview.tsx",
+    "build.server": "vite build -c adapters/vercel-edge/vite.config.ts",
     "build.types": "tsc --incremental --noEmit",
-    "deploy": "echo 'Run \"npm run qwik add\" to install a server adapter'",
+    "db-push": "npx drizzle-kit push:mysql",
+    "deploy": "vercel deploy",
     "dev": "vite --mode ssr",
     "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
     "fmt": "prettier --write .",
     "fmt.check": "prettier --check .",
+    "generate-migration": "npx drizzle-kit generate:mysql",
     "lint": "eslint \"src/**/*.ts*\"",
     "preview": "qwik build preview && vite preview --open",
     "start": "vite --open --mode ssr",
-    "qwik": "qwik",
-    "generate-migration": "npx drizzle-kit generate:mysql",
-    "db-push": "npx drizzle-kit push:mysql"
+    "qwik": "qwik"
   },
   "dependencies": {
     "@planetscale/database": "^1.7.0",
@@ -45,6 +46,7 @@
     "prettier": "2.8.8",
     "typescript": "5.0.4",
     "undici": "5.22.0",
+    "vercel": "^29.1.1",
     "vite": "4.3.5",
     "vite-tsconfig-paths": "4.2.0"
   }
