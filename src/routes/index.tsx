@@ -1,6 +1,6 @@
 import { component$, useSignal, useStore } from '@builder.io/qwik'
 import { type DocumentHead, routeLoader$, z, server$ } from '@builder.io/qwik-city'
-import { eq } from 'drizzle-orm'
+import { desc, eq } from 'drizzle-orm'
 
 import { posts } from '../db/schema'
 import { getDb } from '../db/db'
@@ -8,7 +8,7 @@ import { getDb } from '../db/db'
 export const usePosts = routeLoader$(async (reqEvent) => {
   const db = getDb(reqEvent)
 
-  const allPosts = await db.select().from(posts)
+  const allPosts = await db.select().from(posts).orderBy(desc(posts.createdAt))
 
   return allPosts
 })
@@ -51,7 +51,7 @@ export default component$(() => {
 
           content.value = ''
 
-          posts.push(newPost.data)
+          posts.unshift(newPost.data)
         }}
         preventdefault:submit
       >
