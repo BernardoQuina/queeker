@@ -45,7 +45,7 @@ export default component$(({ posts }: Props) => {
       }}
       preventdefault:submit
     >
-      <input bind:value={content} />
+      <input bind:value={content} class="bg-transparent" />
       <button type="submit">Post</button>
     </form>
   )

@@ -27,9 +27,11 @@ export default component$(() => {
     <div>
       <Header />
       {session.value?.user && <PostForm posts={posts} />}
-      {posts.map((post) => (
-        <div key={post.id}>{post.content}</div>
-      ))}
+      <section class="pb-20">
+        {posts.map((post) => (
+          <article key={post.id}>{post.content}</article>
+        ))}
+      </section>
     </div>
   )
 })
