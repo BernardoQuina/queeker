@@ -1,5 +1,5 @@
 import { component$, useSignal } from '@builder.io/qwik'
-import { Form } from '@builder.io/qwik-city'
+import { Form, useLocation } from '@builder.io/qwik-city'
 import { LuLogOut, LuSun, LuMoon } from '@qwikest/icons/lucide'
 // @qwikest/icons is causing a qwik warning of duplicate implementation of JSXNode
 
@@ -17,6 +17,8 @@ export default component$(({ initialTheme }: Props) => {
   const signOut = useAuthSignout()
 
   const theme = useSignal(initialTheme)
+
+  const location = useLocation()
 
   return (
     <footer class="fixed bottom-0 flex h-16 w-full items-center bg-blue-200 text-stone-950 dark:bg-blue-900 dark:text-slate-50">
@@ -39,11 +41,7 @@ export default component$(({ initialTheme }: Props) => {
       ) : (
         <Form id="signin" action={signIn} class="ml-3">
           <input type="hidden" name="providerId" value="github" />
-          <input
-            type="hidden"
-            name="options.callbackUrl"
-            value="https://qwik-drizzle.vercel.app/login-redirect"
-          />
+          <input type="hidden" name="options.callbackUrl" value={location.url.href} />
           <button type="submit" class="flex h-10 items-center rounded-full border px-10">
             <GitHubLogo />
             <p class="ml-3 font-medium">Sign in with GitHub</p>
