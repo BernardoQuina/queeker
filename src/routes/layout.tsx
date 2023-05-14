@@ -29,7 +29,7 @@ export default component$(() => {
           `}
         </style>
       )}
-      <main class="min-h-screen bg-white text-stone-950 dark:bg-blue-1000 dark:text-slate-50">
+      <main class="min-h-screen bg-white dark:bg-blue-1000">
         <Slot />
       </main>
       <Footer initialTheme={theme.value.theme} />

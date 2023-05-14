@@ -21,3 +21,13 @@
 .light {
   color-scheme: light;
 }
+
+.dark * {
+  @apply text-slate-50;
+  @apply border-slate-600;
+}
+
+.light * {
+  @apply text-stone-950;
+  @apply border-stone-200;
+}

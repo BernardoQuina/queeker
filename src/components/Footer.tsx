@@ -6,6 +6,7 @@ import { LuLogOut, LuSun, LuMoon } from '@qwikest/icons/lucide'
 import { toggleTheme } from '../utils/toggleTheme'
 import { useAuthSession, useAuthSignin, useAuthSignout } from '../routes/plugin@auth'
 import { GitHubLogo } from './icons/GithubLogo'
+import Button from './Button'
 
 interface Props {
   initialTheme: 'light' | 'dark'
@@ -21,31 +22,33 @@ export default component$(({ initialTheme }: Props) => {
   const location = useLocation()
 
   return (
-    <footer class="fixed bottom-0 flex h-16 w-full items-center bg-blue-200 text-stone-950 dark:bg-blue-900 dark:text-slate-50">
-      <button
-        class="flex h-10 w-10 items-center justify-center rounded-full text-xl"
+    <footer class="fixed bottom-0 flex h-16 w-full items-center border-t-[1px] bg-opacity-50 px-6 backdrop-blur-lg">
+      <Button
+        variant="ghost"
+        class="h-10 w-10 items-center justify-center text-xl"
         onClick$={() => (theme.value = toggleTheme())}
       >
         {theme.value === 'light' ? <LuSun /> : <LuMoon />}
-      </button>
+      </Button>
       {session.value?.user ? (
         <Form id="signout" action={signOut} class="ml-3">
           <input type="hidden" name="callbackUrl" value="/" />
-          <button
+          <Button
             type="submit"
             class="flex h-10 w-10 items-center justify-center rounded-full text-xl"
+            variant="ghost"
           >
             <LuLogOut />
-          </button>
+          </Button>
         </Form>
       ) : (
         <Form id="signin" action={signIn} class="ml-3">
           <input type="hidden" name="providerId" value="github" />
           <input type="hidden" name="options.callbackUrl" value={location.url.href} />
-          <button type="submit" class="flex h-10 items-center rounded-full border px-10">
+          <Button type="submit" variant="outline" class="flex h-10 items-center px-10">
             <GitHubLogo />
             <p class="ml-3 font-medium">Sign in with GitHub</p>
-          </button>
+          </Button>
         </Form>
       )}
     </footer>
