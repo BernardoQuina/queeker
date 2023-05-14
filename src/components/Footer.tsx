@@ -39,7 +39,11 @@ export default component$(({ initialTheme }: Props) => {
       ) : (
         <Form id="signin" action={signIn} class="ml-3">
           <input type="hidden" name="providerId" value="github" />
-          <input type="hidden" name="options.callbackUrl" value="http://127.0.0.1:5173" />
+          <input
+            type="hidden"
+            name="options.callbackUrl"
+            value="https://qwik-drizzle.vercel.app/login-redirect"
+          />
           <button type="submit" class="flex h-10 items-center rounded-full border px-10">
             <GitHubLogo />
             <p class="ml-3 font-medium">Sign in with GitHub</p>
