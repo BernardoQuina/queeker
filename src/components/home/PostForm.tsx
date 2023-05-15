@@ -98,6 +98,7 @@ export default component$(({ posts, user }: Props) => {
         height={48}
         class="mt-4 h-[48px] w-[48px] rounded-full"
       />
+
       <textarea
         id="tweet"
         ref={textareaRef}
