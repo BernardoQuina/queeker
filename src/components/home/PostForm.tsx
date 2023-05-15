@@ -17,7 +17,10 @@ const postInput = z.object({
 type PostInput = z.infer<typeof postInput>
 
 export const addPost = server$(async function (post: PostInput) {
-  const sessionToken = this.cookie.get('next-auth.session-token')
+  const sessionToken =
+    this.env.get('NODE_ENV') === 'development'
+      ? this.cookie.get('next-auth.session-token')
+      : this.cookie.get('__Secure-next-auth.session-token')
 
   if (!sessionToken || !sessionToken?.value) throw new Error('Unauthorized')
 
