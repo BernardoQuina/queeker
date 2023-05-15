@@ -6,6 +6,7 @@ import { postWithUserSelect, posts, users } from '../db/schema'
 import { getDb } from '../db/db'
 import Header from '../components/home/Header'
 import PostForm from '../components/home/PostForm'
+import PostItem from '../components/home/PostItem'
 import { useAuthSession } from './plugin@auth'
 
 export const usePosts = routeLoader$(async (reqEvent) => {
@@ -28,12 +29,12 @@ export default component$(() => {
   const session = useAuthSession()
 
   return (
-    <div>
+    <div class="w-[600px] max-w-full self-center border-l-[1px] border-r-[1px]">
       <Header />
-      {session.value?.user && <PostForm posts={posts} />}
-      <section class="pb-20">
+      <section class="pb-20 pt-14">
+        {session.value?.user && <PostForm posts={posts} />}
         {posts.map((post) => (
-          <article key={post.id}>{post.content}</article>
+          <PostItem key={post.id} post={post} />
         ))}
       </section>
     </div>

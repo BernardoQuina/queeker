@@ -14,6 +14,11 @@
  *
  */
 
+/* set default font-size to 15px */
+html {
+  font-size: 15px;
+}
+
 .dark {
   color-scheme: dark;
 }

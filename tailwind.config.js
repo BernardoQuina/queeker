@@ -8,9 +8,18 @@ module.exports = {
         blue: {
           550: '#1DA1F2',
           650: '#188CD8',
-          1000: '#15202b',
+          1000: '#1C2732',
+          1100: '#15202b',
         },
       },
+    },
+  },
+  variants: {
+    textDecoration: ['hover'],
+    underline: ['hover'],
+    extend: {
+      textDecoration: ['hover'],
+      underline: ['hover'],
     },
   },
   plugins: [],

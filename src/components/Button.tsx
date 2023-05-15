@@ -11,11 +11,11 @@ export default component$((props: Props) => {
   let variantStyle = ''
 
   if (variant === 'ghost') {
-    variantStyle = `${className} flex rounded-full hover:bg-slate-600 dark:hover:bg-slate-600 hover:bg-opacity-10 dark:hover:bg-opacity-30 hover:backdrop-blur active:bg-slate-500 active:bg-opacity-20`
+    variantStyle = `${className} flex rounded-full hover:bg-stone-500 dark:hover:bg-slate-200 hover:bg-opacity-[0.15] dark:hover:bg-opacity-[0.12] hover:backdrop-blur active:bg-stone-400 active:bg-opacity-30 dark:active:bg-slate-200 dark:active:bg-opacity-20`
   }
 
   if (variant === 'outline') {
-    variantStyle = `${className} rounded-full border-[1px] bg-opacity-60 backdrop-blur hover:bg-slate-600 dark:hover:bg-slate-600 hover:bg-opacity-10 dark:hover:bg-opacity-30 hover:backdrop-blur active:bg-slate-500 active:bg-opacity-30`
+    variantStyle = `${className} rounded-full border-[1px] bg-opacity-60 backdrop-blur hover:bg-stone-400 dark:hover:bg-slate-200 hover:bg-opacity-[0.15] dark:hover:bg-opacity-10 hover:backdrop-blur active:bg-stone-400 active:bg-opacity-30 dark:active:bg-slate-200 dark:active:bg-opacity-20`
   }
 
   if (variant === 'solid') {
