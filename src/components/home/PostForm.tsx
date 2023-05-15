@@ -1,10 +1,14 @@
-import { component$, useSignal } from '@builder.io/qwik'
+import { component$, useSignal, useVisibleTask$ } from '@builder.io/qwik'
 import { server$, z } from '@builder.io/qwik-city'
 import { eq } from 'drizzle-orm'
 import { decode } from '@auth/core/jwt'
+import { Image } from '@unpic/qwik'
+import type { DefaultSession } from '@auth/core/types'
 
 import { getDb } from '../../db/db'
 import { posts, users, type PostWithUser, postWithUserSelect } from '../../db/schema'
+import Button from '../Button'
+import Spinner from '../Spinner'
 
 const postInput = z.object({
   content: z.string(),
@@ -48,24 +52,66 @@ export const addPost = server$(async function (post: PostInput) {
 
 interface Props {
   posts: PostWithUser[]
+  user: DefaultSession['user']
 }
 
-export default component$(({ posts }: Props) => {
+export default component$(({ posts, user }: Props) => {
   const content = useSignal('')
+  const loading = useSignal(false)
+
+  const textareaRef = useSignal<HTMLTextAreaElement>()
+
+  useVisibleTask$(({ cleanup }) => {
+    const setHeight = () => {
+      if (textareaRef.value) {
+        textareaRef.value.style.height = 'auto'
+        textareaRef.value.style.height = `${textareaRef.value.scrollHeight}px`
+      }
+    }
+
+    textareaRef.value?.addEventListener('input', setHeight)
+
+    cleanup(() => textareaRef.value?.removeEventListener('input', setHeight))
+  })
 
   return (
     <form
       onSubmit$={async () => {
+        loading.value = true
+
         const newPost = await addPost({ content: content.value })
+
+        loading.value = false
 
         content.value = ''
 
         posts.unshift(newPost.data)
       }}
       preventdefault:submit
+      class="flex min-h-[5.25rem] border-b-[1px] px-3"
     >
-      <input bind:value={content} class="bg-transparent" />
-      <button type="submit">Post</button>
+      <Image
+        src={user?.image ?? ''}
+        alt="user avatar"
+        layout="constrained"
+        width={48}
+        height={48}
+        class="mt-4 h-[48px] w-[48px] rounded-full"
+      />
+      <textarea
+        id="tweet"
+        ref={textareaRef}
+        bind:value={content}
+        placeholder="What is happening?!"
+        class="min-h-[5.25rem] flex-grow resize-none overflow-hidden bg-transparent px-3 pb-2 pt-7 text-xl focus:outline-none"
+      />
+      <Button
+        disabled={loading.value || content.value.length === 0}
+        type="submit"
+        class="mt-[1.4rem] h-10 w-[5.5rem] font-semibold"
+      >
+        {loading.value ? <Spinner /> : 'Tweet'}
+      </Button>
     </form>
   )
 })

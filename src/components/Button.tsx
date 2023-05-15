@@ -3,6 +3,7 @@ import { Slot, component$, type HTMLAttributes } from '@builder.io/qwik'
 interface Props extends HTMLAttributes<HTMLButtonElement> {
   variant?: 'ghost' | 'outline' | 'solid'
   type?: 'button' | 'submit' | 'reset'
+  disabled?: boolean
 }
 
 export default component$((props: Props) => {
@@ -19,7 +20,7 @@ export default component$((props: Props) => {
   }
 
   if (variant === 'solid') {
-    variantStyle = `${className} rounded-full text-white bg-blue-550 hover:bg-blue-650 active:bg-indigo-400`
+    variantStyle = `${className} rounded-full text-white bg-blue-550 hover:bg-blue-650 active:bg-blue-650 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-550`
   }
 
   return (
