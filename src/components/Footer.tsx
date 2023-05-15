@@ -47,7 +47,8 @@ export default component$(({ initialTheme }: Props) => {
           <input type="hidden" name="options.callbackUrl" value={location.url.href} />
           <Button type="submit" variant="outline" class="flex h-10 items-center px-10">
             <GitHubLogo />
-            <p class="ml-3 font-medium">Sign in with GitHub</p>
+            <p class="ml-3 font-medium">Sign in</p>
+            <p class="ml-1 hidden font-medium sm:block">with GitHub</p>
           </Button>
         </Form>
       )}

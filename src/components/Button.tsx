@@ -19,7 +19,7 @@ export default component$((props: Props) => {
   }
 
   if (variant === 'solid') {
-    variantStyle = `${className} rounded-full bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-400`
+    variantStyle = `${className} rounded-full text-white bg-blue-550 hover:bg-blue-650 active:bg-indigo-400`
   }
 
   return (

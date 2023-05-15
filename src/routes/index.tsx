@@ -1,8 +1,8 @@
 import { component$, useStore } from '@builder.io/qwik'
 import { type DocumentHead, routeLoader$ } from '@builder.io/qwik-city'
-import { desc } from 'drizzle-orm'
+import { desc, eq } from 'drizzle-orm'
 
-import { posts } from '../db/schema'
+import { postWithUserSelect, posts, users } from '../db/schema'
 import { getDb } from '../db/db'
 import Header from '../components/home/Header'
 import PostForm from '../components/home/PostForm'
@@ -11,7 +11,11 @@ import { useAuthSession } from './plugin@auth'
 export const usePosts = routeLoader$(async (reqEvent) => {
   const db = getDb(reqEvent)
 
-  const allPosts = await db.select().from(posts).orderBy(desc(posts.createdAt))
+  const allPosts = await db
+    .select(postWithUserSelect)
+    .from(posts)
+    .orderBy(desc(posts.createdAt))
+    .leftJoin(users, eq(users.id, posts.userId))
 
   return allPosts
 })
