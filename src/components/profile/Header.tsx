@@ -39,11 +39,12 @@ export default component$(({ user }: Props) => {
         </div>
       </header>
       <section class="mt-[4.1rem] border-b-[1px] pb-3">
-        <img
-          src="/images/sql.jpeg"
+        <Image
+          src="https://qwik-drizzle.vercel.app/images/sql.jpeg"
           alt="banner meme"
-          width={400}
-          height="auto"
+          width={600}
+          height={160}
+          layout="constrained"
           class="h-40 w-full border-b-[1px] object-cover object-top sm:h-56"
         />
         <div class="relative px-3 pt-[84px]">
