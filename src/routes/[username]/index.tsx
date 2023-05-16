@@ -5,9 +5,7 @@ import { desc, eq } from 'drizzle-orm'
 import { postWithUserSelect, posts, users } from '../../db/schema'
 import { getDb } from '../../db/db'
 import Header from '../../components/profile/Header'
-import PostForm from '../../components/home/PostForm'
 import PostItem from '../../components/home/PostItem'
-import { useAuthSession } from '.././plugin@auth'
 
 export const useUserPosts = routeLoader$(async (reqEvent) => {
   const db = getDb(reqEvent)
@@ -36,13 +34,10 @@ export default component$(() => {
   const user = useStore(postsSignal.value.user)
   const userPosts = useStore(postsSignal.value.posts)
 
-  const session = useAuthSession()
-
   return (
     <div class="w-[600px] max-w-full self-center border-l-[1px] border-r-[1px]">
       <Header user={user} />
       <section class="pb-20">
-        {session.value?.user && <PostForm posts={userPosts} user={session.value.user} />}
         {userPosts.map((post) => (
           <PostItem key={post.id} post={post} />
         ))}
