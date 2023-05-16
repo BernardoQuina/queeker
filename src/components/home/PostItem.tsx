@@ -50,25 +50,33 @@ export default component$(({ post }: Props) => {
       </a>
       <a
         href={`/${post.user?.username}`}
-        class="absolute left-[4.75rem] top-3 z-[1] flex"
+        class="absolute left-[4.75rem] top-3 z-[1] flex w-[calc(100%-72px)]"
       >
         {post.user?.displayName && (
-          <span class="mr-1 font-semibold hover:underline">{post.user.displayName}</span>
+          <span class="mr-1 max-w-[38%] truncate break-words font-semibold hover:underline sm:max-w-[43%]">
+            {post.user.displayName}
+          </span>
         )}
-        <span class="text-stone-500 dark:text-gray-400">@{post.user?.username} </span>
+        <span class="max-w-[38%] truncate break-words text-stone-500 dark:text-gray-400 sm:max-w-[43%]">
+          @{post.user?.username}
+        </span>
         <span class="dark:text-gray-400º px-1 text-stone-500">·</span>
         <span class="text-stone-500 dark:text-gray-400">{relativeTime}</span>
       </a>
       <a href={`/${post.user?.username}/status/${post.id}`} class="flex w-full p-3">
         {/* Placeholder for avatar */}
         <div class="min-h-[48px] min-w-[60px]" />
-        <div class="flex flex-col">
+        <div class="flex w-[calc(100%-60px)] flex-col">
           {/* Placeholder for name and username */}
           <div class="flex opacity-0">
             {post.user?.displayName && (
-              <span class="mr-1 font-semibold">{post.user.displayName}</span>
+              <span class="mr-1 max-w-[38%] truncate break-words font-semibold hover:underline sm:max-w-[43%]">
+                {post.user.displayName}
+              </span>
             )}
-            <span class="text-stone-500 dark:text-gray-400">@{post.user?.username} </span>
+            <span class="max-w-[38%] truncate break-words text-stone-500 dark:text-gray-400 sm:max-w-[43%]">
+              @{post.user?.username}
+            </span>
             <span class="px-1 text-stone-500 dark:text-gray-400">·</span>
             <span class="text-stone-500 dark:text-gray-400">{relativeTime}</span>
           </div>

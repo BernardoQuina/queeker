@@ -41,7 +41,7 @@ export default component$(() => {
   return (
     <div class="w-[600px] max-w-full self-center border-l-[1px] border-r-[1px]">
       <Header user={user} />
-      <section class="pb-20 pt-[3.3rem]">
+      <section class="pb-20">
         {session.value?.user && <PostForm posts={userPosts} user={session.value.user} />}
         {userPosts.map((post) => (
           <PostItem key={post.id} post={post} />
