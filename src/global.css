@@ -32,7 +32,7 @@ html {
   @apply border-slate-600;
 }
 
-.light * {
+.light *:not(svg):not(path) {
   @apply text-stone-950;
   @apply border-stone-200;
 }
