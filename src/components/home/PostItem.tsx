@@ -1,5 +1,4 @@
 import { component$ } from '@builder.io/qwik'
-import { Link } from '@builder.io/qwik-city'
 import { Image } from '@unpic/qwik'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -37,7 +36,9 @@ export default component$(({ post }: Props) => {
 
   return (
     <article class="relative flex border-b-[1px] bg-white hover:bg-stone-50 dark:bg-blue-1100 dark:hover:bg-blue-1000">
-      <Link href={`/${post.user?.username}`} class="absolute left-3 top-3">
+      {/* using a tag instead of Link because it was causing an error and also, */}
+      {/* the docs says their internal testing found that using the <a> tag is snappier  */}
+      <a href={`/${post.user?.username}`} class="absolute left-3 top-3">
         <Image
           src={post.user?.image ?? ''}
           alt="user avatar"
@@ -46,8 +47,8 @@ export default component$(({ post }: Props) => {
           height={48}
           class="z-0 rounded-full"
         />
-      </Link>
-      <Link
+      </a>
+      <a
         href={`/${post.user?.username}`}
         class="absolute left-[4.75rem] top-3 z-[1] flex"
       >
@@ -57,8 +58,8 @@ export default component$(({ post }: Props) => {
         <span class="text-stone-500 dark:text-gray-400">@{post.user?.username} </span>
         <span class="dark:text-gray-400º px-1 text-stone-500">·</span>
         <span class="text-stone-500 dark:text-gray-400">{relativeTime}</span>
-      </Link>
-      <Link href={`/${post.user?.username}/status/${post.id}`} class="flex w-full p-3">
+      </a>
+      <a href={`/${post.user?.username}/status/${post.id}`} class="flex w-full p-3">
         {/* Placeholder for avatar */}
         <div class="min-h-[48px] min-w-[60px]" />
         <div class="flex flex-col">
@@ -73,7 +74,7 @@ export default component$(({ post }: Props) => {
           </div>
           <p>{post.content}</p>
         </div>
-      </Link>
+      </a>
     </article>
   )
 })
