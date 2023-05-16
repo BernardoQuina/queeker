@@ -114,7 +114,7 @@ export default component$(({ posts, user }: Props) => {
         type="submit"
         class="mt-[1.4rem] h-10 w-[5.5rem] font-semibold"
       >
-        {loading.value ? <Spinner /> : 'Tweet'}
+        {loading.value ? <Spinner /> : 'Queek'}
       </Button>
     </form>
   )
