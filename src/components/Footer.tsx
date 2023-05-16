@@ -45,7 +45,7 @@ export default component$(({ initialTheme }: Props) => {
         ) : (
           <Form id="signin" action={signIn} class="ml-3">
             <input type="hidden" name="providerId" value="github" />
-            <input type="hidden" name="options.callbackUrl" value={location.url.href} />
+            <input type="hidden" name="options.callbackUrl" value={location.url.origin} />
             <Button type="submit" variant="outline" class="flex h-10 items-center px-10">
               <GitHubLogo />
               <p class="ml-3 font-medium">Sign in</p>
