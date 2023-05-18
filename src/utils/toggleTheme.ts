@@ -1,6 +1,5 @@
 // This function can only run in the browser
 export const getTheme = () => {
-  console.log({ documentCookie: document.cookie })
   const theme = document.cookie.split('; ').find((row) => row.startsWith('theme='))
   const themeValue = theme?.split('=')[1]
 
@@ -13,8 +12,6 @@ export const getTheme = () => {
 
 export const toggleTheme = () => {
   const themeValue = getTheme()
-
-  console.log({ themeValue })
 
   if (themeValue === 'light') {
     document.cookie = 'theme=dark; path=/'
@@ -30,11 +27,7 @@ export const toggleTheme = () => {
   } else {
     document.cookie = 'theme=light; path=/'
 
-    console.log('here')
-
     const layout = document.getElementById('layout')
-
-    console.log({ layout })
 
     layout?.classList.add('light')
     layout?.classList.remove('dark')
