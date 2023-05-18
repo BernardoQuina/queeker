@@ -28,7 +28,7 @@ export default component$(({ initialTheme }: Props) => {
           variant="ghost"
           class="h-10 w-10 items-center justify-center text-xl"
           onClick$={() => (theme.value = toggleTheme())}
-          aria-aria-label="toggle theme"
+          aria-label="toggle theme"
         >
           {theme.value === 'light' ? <LuSun /> : <LuMoon />}
         </Button>
