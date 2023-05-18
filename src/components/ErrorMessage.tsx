@@ -19,8 +19,9 @@ export default component$(({ message, retryAction, retryHref }: Props) => {
 
       {retryAction ? (
         <Button
-          onClick$={retryAction}
           class="mt-5 flex w-[8.5rem] items-center justify-center py-2"
+          aria-label="retry"
+          onClick$={retryAction}
         >
           <div class="text-xl text-white">
             <LuRotateCcw />
@@ -29,7 +30,10 @@ export default component$(({ message, retryAction, retryHref }: Props) => {
         </Button>
       ) : (
         <a href={retryHref ?? '/'}>
-          <Button class="mt-5 flex w-[8.5rem] items-center justify-center py-2">
+          <Button
+            class="mt-5 flex w-[8.5rem] items-center justify-center py-2"
+            aria-label="retry"
+          >
             <div class="text-xl text-white">
               <LuRotateCcw />
             </div>

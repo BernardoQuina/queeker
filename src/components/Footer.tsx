@@ -28,7 +28,7 @@ export default component$(({ initialTheme }: Props) => {
           variant="ghost"
           class="h-10 w-10 items-center justify-center text-xl"
           onClick$={() => (theme.value = toggleTheme())}
-          name="toggle theme"
+          aria-aria-label="toggle theme"
         >
           {theme.value === 'light' ? <LuSun /> : <LuMoon />}
         </Button>
@@ -39,7 +39,7 @@ export default component$(({ initialTheme }: Props) => {
               type="submit"
               class="flex h-10 w-10 items-center justify-center rounded-full text-xl"
               variant="ghost"
-              name="sign out"
+              aria-label="sign out"
             >
               <LuLogOut />
             </Button>
@@ -48,7 +48,12 @@ export default component$(({ initialTheme }: Props) => {
           <Form id="signin" action={signIn} class="ml-3">
             <input type="hidden" name="providerId" value="github" />
             <input type="hidden" name="options.callbackUrl" value={location.url.origin} />
-            <Button type="submit" variant="outline" class="flex h-10 items-center px-10">
+            <Button
+              type="submit"
+              class="flex h-10 items-center px-10"
+              variant="outline"
+              aria-label="sign in"
+            >
               <GitHubLogo />
               <p class="ml-3 font-medium">Sign in</p>
               <p class="ml-1 hidden font-medium sm:block">with GitHub</p>

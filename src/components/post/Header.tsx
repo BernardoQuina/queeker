@@ -21,6 +21,7 @@ export default component$(({ user }: Props) => {
           <Button
             variant="ghost"
             class="flex h-10 w-10 items-center justify-center rounded-full text-2xl"
+            aria-label="go back"
             onClick$={async () => {
               const previousDomain = document.referrer?.split('/')[2]
 

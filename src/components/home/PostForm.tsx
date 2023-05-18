@@ -113,6 +113,7 @@ export default component$(({ posts, user }: Props) => {
         disabled={loading.value || content.value.length === 0}
         type="submit"
         class="mt-[1.4rem] h-10 w-[5.5rem] font-semibold"
+        aria-label="post"
       >
         {loading.value ? <Spinner /> : 'Queek'}
       </Button>
