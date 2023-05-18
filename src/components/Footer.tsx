@@ -28,6 +28,7 @@ export default component$(({ initialTheme }: Props) => {
           variant="ghost"
           class="h-10 w-10 items-center justify-center text-xl"
           onClick$={() => (theme.value = toggleTheme())}
+          name="toggle theme"
         >
           {theme.value === 'light' ? <LuSun /> : <LuMoon />}
         </Button>
@@ -38,6 +39,7 @@ export default component$(({ initialTheme }: Props) => {
               type="submit"
               class="flex h-10 w-10 items-center justify-center rounded-full text-xl"
               variant="ghost"
+              name="sign out"
             >
               <LuLogOut />
             </Button>

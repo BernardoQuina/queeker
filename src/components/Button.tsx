@@ -4,6 +4,7 @@ interface Props extends HTMLAttributes<HTMLButtonElement> {
   variant?: 'ghost' | 'outline' | 'solid'
   type?: 'button' | 'submit' | 'reset'
   disabled?: boolean
+  name?: string
 }
 
 export default component$((props: Props) => {

@@ -38,18 +38,18 @@ export const useUserPosts = routeLoader$(async (reqEvent) => {
 })
 
 export default component$(() => {
-  const postsSignal = useUserPosts()
+  const profileSignal = useUserPosts()
 
-  const user = useStore(postsSignal.value.data?.user ?? { notFound: true })
-  const userPosts = useStore(postsSignal.value.data?.posts ?? [])
+  const user = useStore(profileSignal.value.data?.user ?? { notFound: true })
+  const userPosts = useStore(profileSignal.value.data?.posts ?? [])
 
   const location = useLocation()
 
   return (
     <div class="w-[600px] max-w-full flex-grow self-center border-l-[1px] border-r-[1px]">
-      {'notFound' in user || postsSignal.value.code !== 200 ? (
+      {'notFound' in user || profileSignal.value.code !== 200 ? (
         <ErrorMessage
-          message={postsSignal.value.message}
+          message={profileSignal.value.message}
           retryHref={location.url.pathname}
         />
       ) : (
@@ -66,12 +66,28 @@ export default component$(() => {
   )
 })
 
-export const head: DocumentHead = {
-  title: 'Home | Qwik Drizzle Tweet',
-  meta: [
-    {
-      name: 'Qwik Drizzle Tweet home page',
-      content: 'A twitter clone built with Qwik and Drizzle ORM',
-    },
-  ],
+export const head: DocumentHead = ({ resolveValue, params }) => {
+  const profile = resolveValue(useUserPosts)
+
+  if ('notFound' in profile || profile.code !== 200) {
+    return {
+      title: 'User not found | Qwik Drizzle Tweet',
+      meta: [
+        {
+          name: 'Qwik Drizzle Tweet user not found page',
+          content: 'A twitter clone built with Qwik and Drizzle ORM',
+        },
+      ],
+    }
+  }
+
+  return {
+    title: `${profile.data?.user.displayName} (@${profile.data?.user.username}) | Qwik Drizzle Tweet`,
+    meta: [
+      {
+        name: 'Qwik Drizzle Tweet user profile page',
+        content: 'A twitter clone built with Qwik and Drizzle ORM',
+      },
+    ],
+  }
 }
