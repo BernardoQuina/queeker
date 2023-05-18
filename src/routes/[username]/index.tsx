@@ -66,7 +66,7 @@ export default component$(() => {
   )
 })
 
-export const head: DocumentHead = ({ resolveValue, params }) => {
+export const head: DocumentHead = ({ resolveValue }) => {
   const profile = resolveValue(useUserPosts)
 
   if ('notFound' in profile || profile.code !== 200) {
