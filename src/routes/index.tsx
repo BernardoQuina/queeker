@@ -53,11 +53,11 @@ export default component$(() => {
 })
 
 export const head: DocumentHead = {
-  title: 'Home | Qwik Drizzle Tweet',
+  title: 'Home | Queeker',
   meta: [
     {
-      name: 'Qwik Drizzle Tweet home page',
-      content: 'A twitter clone built with Qwik and Drizzle ORM',
+      name: 'description',
+      content: 'Queeker home page, a twitter clone built with Qwik and Drizzle ORM',
     },
   ],
 }

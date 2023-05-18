@@ -8,32 +8,13 @@ dayjs.extend(relativeTime)
 dayjs.extend(duration)
 
 import type { PostWithUser } from '../../db/schema'
+import { timeAgo } from '../../utils/dates'
 
 interface Props {
   post: PostWithUser
 }
 
 export default component$(({ post }: Props) => {
-  const now = dayjs()
-  const postDate = dayjs(post.createdAt)
-
-  const duration = dayjs.duration(now.diff(postDate))
-  const hoursDiff = Math.floor(duration.asHours())
-
-  let relativeTime = ''
-
-  if (duration.asSeconds() < 10) {
-    relativeTime = 'now'
-  } else if (duration.asMinutes() < 1) {
-    relativeTime = `${Math.floor(duration.asSeconds())}s`
-  } else if (hoursDiff < 1) {
-    relativeTime = `${Math.floor(duration.asMinutes())}m`
-  } else if (hoursDiff < 24) {
-    relativeTime = `${Math.floor(duration.asHours())}h`
-  } else {
-    relativeTime = postDate.format('MMM DD')
-  }
-
   return (
     <article class="relative flex border-b-[1px] bg-white hover:bg-stone-50 dark:bg-blue-1100 dark:hover:bg-blue-1000">
       {/* using a tag instead of Link because it was causing an error and also, */}
@@ -61,7 +42,7 @@ export default component$(({ post }: Props) => {
           @{post.user?.username}
         </span>
         <span class="dark:text-gray-400º px-1 text-stone-500">·</span>
-        <span class="text-stone-500 dark:text-gray-400">{relativeTime}</span>
+        <span class="text-stone-500 dark:text-gray-400">{timeAgo(post.createdAt)}</span>
       </a>
       <a href={`/${post.user?.username}/status/${post.id}`} class="flex w-full p-3">
         {/* Placeholder for avatar */}
@@ -78,9 +59,11 @@ export default component$(({ post }: Props) => {
               @{post.user?.username}
             </span>
             <span class="px-1 text-stone-500 dark:text-gray-400">·</span>
-            <span class="text-stone-500 dark:text-gray-400">{relativeTime}</span>
+            <span class="text-stone-500 dark:text-gray-400">
+              {timeAgo(post.createdAt)}
+            </span>
           </div>
-          <p>{post.content}</p>
+          <p class="w-full whitespace-pre-wrap break-words">{post.content}</p>
         </div>
       </a>
     </article>

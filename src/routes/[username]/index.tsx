@@ -12,7 +12,7 @@ export const useUserPosts = routeLoader$(async (reqEvent) => {
   try {
     const db = getDb(reqEvent)
 
-    const username = reqEvent.url.pathname.replaceAll('/', '')
+    const username = reqEvent.params.username
 
     const user = await db.select().from(users).where(eq(users.username, username))
 
@@ -71,22 +71,22 @@ export const head: DocumentHead = ({ resolveValue }) => {
 
   if ('notFound' in profile || profile.code !== 200) {
     return {
-      title: 'User not found | Qwik Drizzle Tweet',
+      title: 'User not found | Queeker',
       meta: [
         {
-          name: 'Qwik Drizzle Tweet user not found page',
-          content: 'A twitter clone built with Qwik and Drizzle ORM',
+          name: 'description',
+          content: 'Profile page with 404 status, user not found',
         },
       ],
     }
   }
 
   return {
-    title: `${profile.data?.user.displayName} (@${profile.data?.user.username}) | Qwik Drizzle Tweet`,
+    title: `${profile.data?.user.displayName} (@${profile.data?.user.username}) | Queeker`,
     meta: [
       {
-        name: 'Qwik Drizzle Tweet user profile page',
-        content: 'A twitter clone built with Qwik and Drizzle ORM',
+        name: 'description',
+        content: `Profile page for ${profile.data?.user.displayName} (@${profile.data?.user.username})`,
       },
     ],
   }
