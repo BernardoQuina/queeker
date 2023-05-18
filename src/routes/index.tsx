@@ -1,14 +1,13 @@
 import { component$, useStore } from '@builder.io/qwik'
 import { type DocumentHead, routeLoader$ } from '@builder.io/qwik-city'
 import { desc, eq } from 'drizzle-orm'
-import { LuRotateCcw } from '@qwikest/icons/lucide'
 
 import { postWithUserSelect, posts, users } from '../db/schema'
 import { getDb } from '../db/db'
 import Header from '../components/home/Header'
 import PostForm from '../components/home/PostForm'
 import PostItem from '../components/home/PostItem'
-import Button from '../components/Button'
+import ErrorMessage from '../components/ErrorMessage'
 import { useAuthSession } from './plugin@auth'
 
 export const usePosts = routeLoader$(async (reqEvent) => {
@@ -44,21 +43,7 @@ export default component$(() => {
       <section class="flex flex-col pb-20 pt-[3.3rem]">
         {session.value?.user && <PostForm posts={posts} user={session.value.user} />}
         {postsSignal.value.code !== 200 ? (
-          <div class="mt-4 flex flex-col items-center self-center">
-            <h4 class="mb-2 text-xl font-semibold">Error</h4>
-            <p class="text-stone-500 dark:text-gray-400">
-              {postsSignal.value.message ??
-                'Oops, something went wrong. Please try again later.'}
-            </p>
-            <a href="/">
-              <Button class="mt-5 flex w-[8.5rem] items-center justify-center py-2">
-                <div class="text-xl text-white">
-                  <LuRotateCcw />
-                </div>
-                <span class="ml-2 font-medium text-white">Try again</span>
-              </Button>
-            </a>
-          </div>
+          <ErrorMessage message={postsSignal.value.message} />
         ) : (
           posts.map((post) => <PostItem key={post.id} post={post} />)
         )}

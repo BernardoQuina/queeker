@@ -7,7 +7,7 @@ export const useThemeLoader = routeLoader$((reqEvent) => {
   const theme = reqEvent.cookie.get('theme')
 
   if (!theme) {
-    reqEvent.cookie.set('theme', 'dark')
+    reqEvent.cookie.set('theme', 'dark', { path: '/' })
 
     return { theme: 'dark' as const }
   }
@@ -21,13 +21,13 @@ export default component$(() => {
   return (
     <div id="layout" class={theme.value.theme}>
       {theme.value.theme === 'dark' && (
-        <style>
-          {`
-          html {
-            color-scheme: dark;
-          }
+        <style
+          dangerouslySetInnerHTML={`
+            html {
+              color-scheme: dark;
+            }
           `}
-        </style>
+        />
       )}
       <main class="flex min-h-screen flex-col bg-white dark:bg-blue-1100">
         <Slot />
