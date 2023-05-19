@@ -39,6 +39,7 @@ export const addPost = server$(async function (post: PostInput) {
     const rateLimit = new Ratelimit({
       redis: Redis.fromEnv(),
       limiter: Ratelimit.slidingWindow(2, '10 s'),
+      analytics: true,
     })
 
     const { success } = await rateLimit.limit(username)
