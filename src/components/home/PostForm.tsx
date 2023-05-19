@@ -106,8 +106,6 @@ export default component$(({ posts, user }: Props) => {
         if (newPost.code !== 200 || !newPost.data) {
           loading.value = false
 
-          console.log(newPost.message)
-
           return
         }
 
