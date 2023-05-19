@@ -13,7 +13,7 @@ import { useAuthSession } from './plugin@auth'
 export const usePosts = routeLoader$(async (reqEvent) => {
   try {
     // console log ip address
-    console.log('ip address', reqEvent.request.headers)
+    console.log('ip address', reqEvent.request.headers.get('x-forwarded-for'))
 
     const db = getDb(reqEvent)
 
