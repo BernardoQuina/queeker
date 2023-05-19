@@ -27,6 +27,7 @@
     "@planetscale/database": "^1.7.0",
     "@qwikest/icons": "^0.0.8",
     "@unpic/qwik": "^0.0.17",
+    "@upstash/ratelimit": "^0.4.3",
     "dayjs": "^1.11.7",
     "dotenv": "^16.0.3",
     "drizzle-orm": "^0.25.4",

@@ -4,6 +4,8 @@ import { eq } from 'drizzle-orm'
 import { decode } from '@auth/core/jwt'
 import { Image } from '@unpic/qwik'
 import type { DefaultSession } from '@auth/core/types'
+import { Ratelimit } from '@upstash/ratelimit'
+import { Redis } from '@upstash/redis'
 
 import { getDb } from '../../db/db'
 import { posts, users, type PostWithUser, postWithUserSelect } from '../../db/schema'
@@ -17,40 +19,57 @@ const postInput = z.object({
 type PostInput = z.infer<typeof postInput>
 
 export const addPost = server$(async function (post: PostInput) {
-  const sessionToken =
-    this.env.get('NODE_ENV') === 'development'
-      ? this.cookie.get('next-auth.session-token')
-      : this.cookie.get('__Secure-next-auth.session-token')
+  try {
+    const sessionToken =
+      this.env.get('NODE_ENV') === 'development'
+        ? this.cookie.get('next-auth.session-token')
+        : this.cookie.get('__Secure-next-auth.session-token')
 
-  if (!sessionToken || !sessionToken?.value) throw new Error('Unauthorized')
+    if (!sessionToken || !sessionToken?.value) throw new Error('Unauthorized')
 
-  const decoded = await decode({
-    token: sessionToken.value,
-    secret: this.env.get('AUTH_SECRET') as string,
-  })
+    const decoded = await decode({
+      token: sessionToken.value,
+      secret: this.env.get('AUTH_SECRET') as string,
+    })
 
-  const username = decoded?.name?.split('github_handle:')[1]
+    const username = decoded?.name?.split('github_handle:')[1]
 
-  if (!username) throw new Error('Unauthorized')
+    if (!username) return { code: 401, message: 'Unauthorized', data: null }
 
-  const db = getDb({ env: this.env })
+    const rateLimit = new Ratelimit({
+      redis: Redis.fromEnv(),
+      limiter: Ratelimit.slidingWindow(2, '10 s'),
+    })
 
-  const user = await db.select().from(users).where(eq(users.username, username))
+    const { success } = await rateLimit.limit(username)
 
-  if (!user[0]) throw new Error('Unauthorized')
+    if (!success) return { code: 429, message: 'Too many requests', data: null }
 
-  const newPostQuery = await db.insert(posts).values({
-    content: post.content,
-    userId: user[0].id,
-  })
+    const db = getDb({ env: this.env })
 
-  const newPost = await db
-    .select(postWithUserSelect)
-    .from(posts)
-    .where(eq(posts.id, parseInt(newPostQuery.insertId)))
-    .leftJoin(users, eq(users.id, posts.userId))
+    const user = await db.select().from(users).where(eq(users.username, username))
 
-  return { success: true, data: newPost[0] }
+    if (!user[0]) return { code: 401, message: 'Unauthorized', data: null }
+
+    const newPostQuery = await db.insert(posts).values({
+      content: post.content,
+      userId: user[0].id,
+    })
+
+    const newPost = await db
+      .select(postWithUserSelect)
+      .from(posts)
+      .where(eq(posts.id, parseInt(newPostQuery.insertId)))
+      .leftJoin(users, eq(users.id, posts.userId))
+
+    return { code: 200, message: 'success', data: newPost[0] }
+  } catch (error) {
+    let message = 'Oops, something went wrong. Please try again later.'
+
+    if (error instanceof Error) message = error.message
+
+    return { code: 500, message, data: null }
+  }
 })
 
 interface Props {
@@ -83,6 +102,14 @@ export default component$(({ posts, user }: Props) => {
         loading.value = true
 
         const newPost = await addPost({ content: content.value })
+
+        if (newPost.code !== 200 || !newPost.data) {
+          loading.value = false
+
+          console.log(newPost.message)
+
+          return
+        }
 
         loading.value = false
 

@@ -16,9 +16,7 @@ export const useUserPosts = routeLoader$(async (reqEvent) => {
 
     const user = await db.select().from(users).where(eq(users.username, username))
 
-    if (!user[0]) {
-      return { code: 404, message: 'User not found', data: null }
-    }
+    if (!user[0]) return { code: 404, message: 'User not found', data: null }
 
     const allPosts = await db
       .select(postWithUserSelect)
