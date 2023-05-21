@@ -1,4 +1,4 @@
-import type { InferModel } from 'drizzle-orm'
+import { relations, type InferModel } from 'drizzle-orm'
 import {
   int,
   mysqlTable,
@@ -23,7 +23,9 @@ export const users = mysqlTable(
   })
 )
 
-export type User = InferModel<typeof users>
+export const usersRelations = relations(users, ({ many }) => ({
+  posts: many(posts),
+}))
 
 export const posts = mysqlTable('posts', {
   id: serial('id').primaryKey(),
@@ -32,14 +34,26 @@ export const posts = mysqlTable('posts', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })
 
+export const postsRelations = relations(posts, ({ one, many }) => ({
+  author: one(users, { fields: [posts.userId], references: [users.id] }),
+  likes: many(likes),
+}))
+
+export const likes = mysqlTable('likes', {
+  id: serial('id').primaryKey(),
+  userId: int('user_id').notNull(),
+  postId: int('post_id').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
+//
+// Types
+//
+
+export type User = InferModel<typeof users>
 export type Post = InferModel<typeof posts>
+export type Like = InferModel<typeof likes>
 
-export type PostWithUser = Post & { user: User | null }
-
-export const postWithUserSelect = {
-  id: posts.id,
-  content: posts.content,
-  createdAt: posts.createdAt,
-  userId: posts.userId,
-  user: users,
+export type PostWithUserAndLikeCount = Post & { author: User | null } & {
+  likeCount: string
 }

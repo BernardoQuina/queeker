@@ -2,11 +2,12 @@ import { component$, useStore } from '@builder.io/qwik'
 import { type DocumentHead, routeLoader$, useLocation } from '@builder.io/qwik-city'
 import { desc, eq } from 'drizzle-orm'
 
-import { postWithUserSelect, posts, users } from '../../db/schema'
+import { likes, posts, users } from '../../db/schema'
 import { getDb } from '../../db/db'
 import Header from '../../components/profile/Header'
 import PostItem from '../../components/home/PostItem'
 import ErrorMessage from '../../components/ErrorMessage'
+import { countWithColumn } from '../../db/helpers'
 
 export const useUserPosts = routeLoader$(async (reqEvent) => {
   try {
@@ -14,18 +15,18 @@ export const useUserPosts = routeLoader$(async (reqEvent) => {
 
     const username = reqEvent.params.username
 
-    const user = await db.select().from(users).where(eq(users.username, username))
+    const user = await db.query.users.findFirst({ where: eq(users.username, username) })
 
-    if (!user[0]) return { code: 404, message: 'User not found', data: null }
+    if (!user) return { code: 404, message: 'User not found', data: null }
 
-    const allPosts = await db
-      .select(postWithUserSelect)
-      .from(posts)
-      .where(eq(posts.userId, user[0].id))
-      .orderBy(desc(posts.createdAt))
-      .leftJoin(users, eq(users.id, posts.userId))
+    const userPosts = await db.query.posts.findMany({
+      where: eq(posts.userId, user.id),
+      with: { author: true },
+      extras: { likeCount: countWithColumn(likes.postId.name).as('likeCount') },
+      orderBy: desc(posts.createdAt),
+    })
 
-    return { code: 200, message: 'success', data: { user: user[0], posts: allPosts } }
+    return { code: 200, message: 'success', data: { user: user, posts: userPosts } }
   } catch (error) {
     let message = 'Oops, something went wrong. Please try again later.'
 

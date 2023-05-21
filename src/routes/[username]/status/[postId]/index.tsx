@@ -1,12 +1,13 @@
 import { component$, useStore } from '@builder.io/qwik'
 import { type DocumentHead, routeLoader$, useLocation } from '@builder.io/qwik-city'
-import { desc, eq } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 
-import { postWithUserSelect, posts, users } from '../../../../db/schema'
+import { likes, posts } from '../../../../db/schema'
 import { getDb } from '../../../../db/db'
 import ErrorMessage from '../../../../components/ErrorMessage'
 import Header from '../../../../components/post/Header'
 import { formatDate } from '../../../../utils/dates'
+import { countWithColumn } from '../../../../db/helpers'
 
 export const usePost = routeLoader$(async (reqEvent) => {
   try {
@@ -16,16 +17,15 @@ export const usePost = routeLoader$(async (reqEvent) => {
 
     if (isNaN(postId)) return { code: 400, message: 'Invalid post id', data: null }
 
-    const post = await db
-      .select(postWithUserSelect)
-      .from(posts)
-      .where(eq(posts.id, postId))
-      .orderBy(desc(posts.createdAt))
-      .leftJoin(users, eq(users.id, posts.userId))
+    const post = await db.query.posts.findFirst({
+      where: eq(posts.id, postId),
+      with: { author: true },
+      extras: { likeCount: countWithColumn(likes.postId.name).as('likeCount') },
+    })
 
-    if (!post[0]) return { code: 404, message: 'Qweek not found', data: null }
+    if (!post) return { code: 404, message: 'Qweek not found', data: null }
 
-    return { code: 200, message: 'success', data: { post: post[0] } }
+    return { code: 200, message: 'success', data: { post } }
   } catch (error) {
     let message = 'Oops, something went wrong. Please try again later.'
 
@@ -51,7 +51,7 @@ export default component$(() => {
         />
       ) : (
         <>
-          <Header user={post.user} />
+          <Header user={post.author} />
           <section class="border-b-[1px] px-3 pb-3">
             <p class="mb-2 w-full whitespace-pre-wrap break-words text-xl">
               {post.content}
@@ -82,11 +82,11 @@ export const head: DocumentHead = ({ resolveValue }) => {
   }
 
   return {
-    title: `${post.data?.post.user?.displayName} on Queeker: "${post.data?.post.content}"`,
+    title: `${post.data?.post.author?.displayName} on Queeker: "${post.data?.post.content}"`,
     meta: [
       {
         name: 'description',
-        content: `${post.data?.post.user?.displayName} on Queeker: "${post.data?.post.content}"`,
+        content: `${post.data?.post.author?.displayName} on Queeker: "${post.data?.post.content}"`,
       },
     ],
   }

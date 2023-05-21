@@ -7,11 +7,11 @@ import duration from 'dayjs/plugin/duration'
 dayjs.extend(relativeTime)
 dayjs.extend(duration)
 
-import type { PostWithUser } from '../../db/schema'
+import type { PostWithUserAndLikeCount } from '../../db/schema'
 import { timeAgo } from '../../utils/dates'
 
 interface Props {
-  post: PostWithUser
+  post: PostWithUserAndLikeCount
 }
 
 export default component$(({ post }: Props) => {
@@ -19,9 +19,9 @@ export default component$(({ post }: Props) => {
     <article class="relative flex border-b-[1px] bg-white hover:bg-stone-50 dark:bg-blue-1100 dark:hover:bg-blue-1000">
       {/* using a tag instead of Link because it was causing an error and also, */}
       {/* the docs says their internal testing found that using the <a> tag is snappier  */}
-      <a href={`/${post.user?.username}`} class="absolute left-3 top-3">
+      <a href={`/${post.author?.username}`} class="absolute left-3 top-3">
         <Image
-          src={post.user?.image ?? ''}
+          src={post.author?.image ?? ''}
           alt="user avatar"
           layout="constrained"
           width={48}
@@ -30,33 +30,33 @@ export default component$(({ post }: Props) => {
         />
       </a>
       <a
-        href={`/${post.user?.username}`}
+        href={`/${post.author?.username}`}
         class="absolute left-[4.75rem] top-3 z-[1] flex w-[calc(100%-72px)]"
       >
-        {post.user?.displayName && (
+        {post.author?.displayName && (
           <span class="mr-1 max-w-[38%] truncate break-words font-semibold hover:underline sm:max-w-[43%]">
-            {post.user.displayName}
+            {post.author.displayName}
           </span>
         )}
         <span class="max-w-[38%] truncate break-words text-stone-500 dark:text-gray-400 sm:max-w-[43%]">
-          @{post.user?.username}
+          @{post.author?.username}
         </span>
         <span class="dark:text-gray-400º px-1 text-stone-500">·</span>
         <span class="text-stone-500 dark:text-gray-400">{timeAgo(post.createdAt)}</span>
       </a>
-      <a href={`/${post.user?.username}/status/${post.id}`} class="flex w-full p-3">
+      <a href={`/${post.author?.username}/status/${post.id}`} class="flex w-full p-3">
         {/* Placeholder for avatar */}
         <div class="min-h-[48px] min-w-[60px]" />
         <div class="flex w-[calc(100%-60px)] flex-col">
           {/* Placeholder for name and username */}
           <div class="flex opacity-0">
-            {post.user?.displayName && (
+            {post.author?.displayName && (
               <span class="mr-1 max-w-[38%] truncate break-words font-semibold hover:underline sm:max-w-[43%]">
-                {post.user.displayName}
+                {post.author.displayName}
               </span>
             )}
             <span class="max-w-[38%] truncate break-words text-stone-500 dark:text-gray-400 sm:max-w-[43%]">
-              @{post.user?.username}
+              @{post.author?.username}
             </span>
             <span class="px-1 text-stone-500 dark:text-gray-400">·</span>
             <span class="text-stone-500 dark:text-gray-400">

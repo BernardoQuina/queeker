@@ -50,6 +50,13 @@
       "when": 1684149154888,
       "tag": "0006_confused_thundra",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1684530711400,
+      "tag": "0007_chemical_tattoo",
+      "breakpoints": true
     }
   ]
 }

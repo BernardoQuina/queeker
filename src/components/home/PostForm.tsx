@@ -1,6 +1,6 @@
 import { component$, useSignal, useVisibleTask$ } from '@builder.io/qwik'
 import { server$, z } from '@builder.io/qwik-city'
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import { decode } from '@auth/core/jwt'
 import { Image } from '@unpic/qwik'
 import type { DefaultSession } from '@auth/core/types'
@@ -8,7 +8,7 @@ import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
 
 import { getDb } from '../../db/db'
-import { posts, users, type PostWithUser, postWithUserSelect } from '../../db/schema'
+import { type PostWithUserAndLikeCount, posts, users } from '../../db/schema'
 import Button from '../Button'
 import Spinner from '../Spinner'
 
@@ -48,22 +48,21 @@ export const addPost = server$(async function (post: PostInput) {
 
     const db = getDb({ env: this.env })
 
-    const user = await db.select().from(users).where(eq(users.username, username))
+    const user = await db.query.users.findFirst({ where: eq(users.username, username) })
 
-    if (!user[0]) return { code: 401, message: 'Unauthorized', data: null }
+    if (!user) return { code: 401, message: 'Unauthorized', data: null }
 
-    const newPostQuery = await db.insert(posts).values({
-      content: post.content,
-      userId: user[0].id,
+    const newPostQuery = await db
+      .insert(posts)
+      .values({ content: post.content, userId: user.id })
+
+    const newPost = await db.query.posts.findFirst({
+      where: eq(posts.id, parseInt(newPostQuery.insertId)),
+      with: { author: true },
+      extras: { likeCount: sql<string>`0`.as('likeCount') },
     })
 
-    const newPost = await db
-      .select(postWithUserSelect)
-      .from(posts)
-      .where(eq(posts.id, parseInt(newPostQuery.insertId)))
-      .leftJoin(users, eq(users.id, posts.userId))
-
-    return { code: 200, message: 'success', data: newPost[0] }
+    return { code: 200, message: 'success', data: newPost }
   } catch (error) {
     let message = 'Oops, something went wrong. Please try again later.'
 
@@ -74,7 +73,7 @@ export const addPost = server$(async function (post: PostInput) {
 })
 
 interface Props {
-  posts: PostWithUser[]
+  posts: PostWithUserAndLikeCount[]
   user: DefaultSession['user']
 }
 

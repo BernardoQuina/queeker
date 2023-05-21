@@ -30,7 +30,7 @@
     "@upstash/ratelimit": "^0.4.3",
     "dayjs": "^1.11.7",
     "dotenv": "^16.0.3",
-    "drizzle-orm": "^0.25.4",
+    "drizzle-orm": "^0.26.0",
     "mysql2": "^3.3.1"
   },
   "devDependencies": {

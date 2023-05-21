@@ -1,9 +1,10 @@
 import { component$, useStore } from '@builder.io/qwik'
 import { type DocumentHead, routeLoader$ } from '@builder.io/qwik-city'
-import { desc, eq } from 'drizzle-orm'
+import { desc } from 'drizzle-orm'
 
-import { postWithUserSelect, posts, users } from '../db/schema'
+import { likes, posts } from '../db/schema'
 import { getDb } from '../db/db'
+import { countWithColumn } from '../db/helpers'
 import Header from '../components/home/Header'
 import PostForm from '../components/home/PostForm'
 import PostItem from '../components/home/PostItem'
@@ -12,18 +13,15 @@ import { useAuthSession } from './plugin@auth'
 
 export const usePosts = routeLoader$(async (reqEvent) => {
   try {
-    // console log ip address
-    console.log('ip address', reqEvent.headers.get('x-forwarded-for'))
-
     const db = getDb(reqEvent)
 
-    const allPosts = await db
-      .select(postWithUserSelect)
-      .from(posts)
-      .orderBy(desc(posts.createdAt))
-      .leftJoin(users, eq(users.id, posts.userId))
+    const newPosts = await db.query.posts.findMany({
+      with: { author: true },
+      extras: { likeCount: countWithColumn(likes.postId.name).as('likeCount') },
+      orderBy: desc(posts.createdAt),
+    })
 
-    return { code: 200, message: 'success', data: allPosts }
+    return { code: 200, message: 'success', data: newPosts }
   } catch (error) {
     let message = 'Oops, something went wrong. Please try again later.'
 

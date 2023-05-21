@@ -2,6 +2,8 @@ import { drizzle } from 'drizzle-orm/planetscale-serverless'
 import { connect } from '@planetscale/database'
 import type { RequestEventAction, RequestEventLoader } from '@builder.io/qwik-city'
 
+import * as schema from './schema'
+
 type Fail = RequestEventLoader['fail']
 type Env = RequestEventAction['env']
 
@@ -24,5 +26,5 @@ export const getDb = ({ env, fail }: { env: Env; fail?: Fail }) => {
     password: env.get('DATABASE_PASSWORD') as string,
   })
 
-  return drizzle(connection, { logger: env.get('NODE_ENV') === 'development' })
+  return drizzle(connection, { schema, logger: env.get('NODE_ENV') === 'development' })
 }
