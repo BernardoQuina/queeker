@@ -17,12 +17,11 @@ export const { onRequest, useAuthSession, useAuthSignin, useAuthSignout } = serv
         profile: async (profile) => {
           const db = getDb({ env })
 
-          const user = await db
-            .select()
-            .from(users)
-            .where(eq(users.username, profile.login.toLowerCase()))
+          const user = await db.query.users.findFirst({
+            where: eq(users.username, profile.login.toLowerCase()),
+          })
 
-          if (!user[0]) {
+          if (!user) {
             await db.insert(users).values({
               username: profile.login.toLowerCase(),
               displayName: profile.name,
