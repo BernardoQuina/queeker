@@ -1,4 +1,4 @@
-import { component$, useSignal, useVisibleTask$ } from '@builder.io/qwik'
+import { $, component$, useSignal, useVisibleTask$ } from '@builder.io/qwik'
 import { server$, z } from '@builder.io/qwik-city'
 import { eq, sql } from 'drizzle-orm'
 import { decode } from '@auth/core/jwt'
@@ -6,11 +6,13 @@ import { Image } from '@unpic/qwik'
 import type { DefaultSession } from '@auth/core/types'
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
+import { useCSSTransition } from 'qwik-transition'
 
 import { getDb } from '../../db/db'
 import { type PostWithUserAndLikeCount, posts, users } from '../../db/schema'
 import Button from '../Button'
 import Spinner from '../Spinner'
+import Toast from '../Toast'
 
 const postInput = z.object({
   content: z.string(),
@@ -38,7 +40,7 @@ export const addPost = server$(async function (post: PostInput) {
 
     const rateLimit = new Ratelimit({
       redis: Redis.fromEnv(),
-      limiter: Ratelimit.slidingWindow(2, '10 s'),
+      limiter: Ratelimit.slidingWindow(2, '30 s'),
       analytics: true,
     })
 
@@ -81,6 +83,12 @@ export default component$(({ posts, user }: Props) => {
   const content = useSignal('')
   const loading = useSignal(false)
 
+  const errorMessage = useSignal('')
+  const toastVisible = useSignal(false)
+
+  // enterFrom animation wasn't working w/ shouldMount and transitionOnAppear so that was left out
+  const { stage } = useCSSTransition(toastVisible, { timeout: 300 })
+
   const textareaRef = useSignal<HTMLTextAreaElement>()
 
   useVisibleTask$(({ cleanup }) => {
@@ -105,6 +113,9 @@ export default component$(({ posts, user }: Props) => {
 
         if (newPost.code !== 200 || !newPost.data) {
           loading.value = false
+
+          errorMessage.value = newPost.message
+          toastVisible.value = true
 
           return
         }
@@ -142,6 +153,11 @@ export default component$(({ posts, user }: Props) => {
       >
         {loading.value ? <Spinner /> : 'Queek'}
       </Button>
+      <Toast
+        stage={stage}
+        message={errorMessage.value}
+        onClose={$(() => (toastVisible.value = false))}
+      />
     </form>
   )
 })

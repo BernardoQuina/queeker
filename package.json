@@ -31,7 +31,8 @@
     "dayjs": "^1.11.7",
     "dotenv": "^16.0.3",
     "drizzle-orm": "^0.26.0",
-    "mysql2": "^3.3.1"
+    "mysql2": "^3.3.1",
+    "qwik-transition": "^0.0.7"
   },
   "devDependencies": {
     "@auth/core": "^0.7.1",
