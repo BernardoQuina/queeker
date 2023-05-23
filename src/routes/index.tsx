@@ -9,6 +9,7 @@ import Header from '../components/home/Header'
 import PostForm from '../components/home/PostForm'
 import PostItem from '../components/home/PostItem'
 import ErrorMessage from '../components/ErrorMessage'
+import Spinner from '../components/Spinner'
 import { useAuthSession } from './plugin@auth'
 
 export const usePosts = routeLoader$(async (reqEvent) => {
@@ -39,7 +40,7 @@ export const getPosts = server$(async function ({ offset }: { offset: number }) 
     const queryPosts = await db.query.posts.findMany({
       with: { author: true },
       extras: { likeCount: countWithColumn(likes.postId.name).as('likeCount') },
-      limit: 30,
+      limit: 25,
       offset,
       orderBy: desc(posts.createdAt),
     })
@@ -65,17 +66,22 @@ export default component$(() => {
   useVisibleTask$(({ cleanup }) => {
     const nearBottom = async () => {
       if (
-        window.innerHeight + window.scrollY >= document.body.offsetHeight - 100 &&
+        window.innerHeight + window.scrollY >= document.body.offsetHeight - 300 &&
         !loadingMore.value
       ) {
         loadingMore.value = true
 
         const newPosts = await getPosts({ offset: posts.length })
 
-        if (newPosts.code !== 200 || !newPosts.data) return
+        if (newPosts.code !== 200 || !newPosts.data) {
+          loadingMore.value = false
+          return
+        }
 
         if (newPosts?.data?.length === 0) {
           window.removeEventListener('scroll', nearBottom)
+
+          loadingMore.value = false
           return
         }
 
@@ -102,7 +108,13 @@ export default component$(() => {
           posts.map((post) => <PostItem key={post.id} post={post} />)
         )}
 
-        <div class="mt-14 h-2 w-2 self-center rounded-full bg-stone-200 dark:bg-slate-600" />
+        {loadingMore.value ? (
+          <div class="mt-14">
+            <Spinner />
+          </div>
+        ) : (
+          <div class="mt-14 h-2 w-2 self-center rounded-full bg-stone-200 dark:bg-slate-600" />
+        )}
       </section>
     </div>
   )
