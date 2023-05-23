@@ -36,6 +36,7 @@ export default component$(({ message, stage, onClose }: Props) => {
         variant="ghost"
         class="h-10 w-10 items-center justify-center text-xl text-stone-500 dark:text-gray-400"
         type="button"
+        aria-label="Close toast"
         onClick$={onClose}
       >
         <LuX />
