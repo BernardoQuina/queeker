@@ -1,73 +1,13 @@
 import { $, component$, useSignal, useVisibleTask$ } from '@builder.io/qwik'
-import { server$, z } from '@builder.io/qwik-city'
-import { eq, sql } from 'drizzle-orm'
 import { Image } from '@unpic/qwik'
 import type { DefaultSession } from '@auth/core/types'
-import { Ratelimit } from '@upstash/ratelimit'
-import { Redis } from '@upstash/redis'
 import { useCSSTransition } from 'qwik-transition'
 
-import { getDb } from '../../db/db'
-import { type PostWithUserAndLikeCount, posts, users } from '../../db/schema'
+import { type PostWithUserAndLikeCount } from '../../db/schema'
 import Button from '../Button'
 import Spinner from '../Spinner'
 import Toast from '../Toast'
-import { getIdFromToken } from '../../utils/getIdFromToken'
-
-const postInput = z.object({
-  content: z.string(),
-})
-
-type PostInput = z.infer<typeof postInput>
-
-export const addPost = server$(async function (post: PostInput) {
-  try {
-    // Get id from session
-    const userId = await getIdFromToken({ cookie: this.cookie, env: this.env })
-
-    if (!userId) return { code: 401, message: 'Unauthorized', data: null }
-
-    // Rate limit
-    const rateLimit = new Ratelimit({
-      redis: Redis.fromEnv(),
-      limiter: Ratelimit.slidingWindow(2, '30 s'),
-      analytics: true,
-    })
-
-    const { success } = await rateLimit.limit(userId.toString())
-
-    if (!success) return { code: 429, message: 'Too many requests', data: null }
-
-    // Get user
-    const db = getDb({ env: this.env })
-
-    const user = await db.query.users.findFirst({ where: eq(users.id, userId) })
-
-    if (!user) return { code: 401, message: 'Unauthorized', data: null }
-
-    // Insert and return new post
-    const newPostQuery = await db
-      .insert(posts)
-      .values({ content: post.content, userId: user.id })
-
-    const newPost = await db.query.posts.findFirst({
-      where: eq(posts.id, parseInt(newPostQuery.insertId)),
-      with: { author: true, likes: { columns: {} } },
-      extras: {
-        likeCount: sql<string>`0`.as('like_count'),
-        userLiked: sql<0>`0`.as('user_liked'),
-      },
-    })
-
-    return { code: 200, message: 'success', data: newPost }
-  } catch (error) {
-    let message = 'Oops, something went wrong. Please try again later.'
-
-    if (error instanceof Error) message = error.message
-
-    return { code: 500, message, data: null }
-  }
-})
+import { addPostMutation } from '../../procedures/posts'
 
 interface Props {
   posts: PostWithUserAndLikeCount[]
@@ -104,7 +44,7 @@ export default component$(({ posts, user }: Props) => {
       onSubmit$={async () => {
         loading.value = true
 
-        const newPost = await addPost({ content: content.value })
+        const newPost = await addPostMutation({ content: content.value })
 
         if (newPost.code !== 200 || !newPost.data) {
           loading.value = false

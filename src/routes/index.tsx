@@ -1,5 +1,5 @@
 import { component$, useSignal, useStore, useVisibleTask$ } from '@builder.io/qwik'
-import { type DocumentHead, routeLoader$, server$ } from '@builder.io/qwik-city'
+import { type DocumentHead, routeLoader$ } from '@builder.io/qwik-city'
 import { desc, sql } from 'drizzle-orm'
 
 import { likes, posts } from '../db/schema'
@@ -10,6 +10,7 @@ import PostItem from '../components/home/PostItem'
 import ErrorMessage from '../components/ErrorMessage'
 import Spinner from '../components/Spinner'
 import { getIdFromToken } from '../utils/getIdFromToken'
+import { postsQuery } from '../procedures/posts'
 import { useAuthSession } from './plugin@auth'
 
 export const usePosts = routeLoader$(async (reqEvent) => {
@@ -45,40 +46,6 @@ export const usePosts = routeLoader$(async (reqEvent) => {
   }
 })
 
-export const getPosts = server$(async function ({ offset }: { offset: number }) {
-  try {
-    // Get user id from session token
-    const userId = await getIdFromToken({ cookie: this.cookie, env: this.env })
-
-    const db = getDb({ env: this.env })
-
-    const queryPosts = await db.query.posts.findMany({
-      with: { author: true, likes: { columns: {} } },
-      extras: {
-        likeCount: sql<string>`COUNT(posts_likes.id)`.as('like_count'),
-        userLiked: userId
-          ? sql<
-              0 | 1
-            >`EXISTS (SELECT 1 FROM ${likes} WHERE likes.post_id = ${posts.id} AND likes.user_id = ${userId})`.as(
-              'user_liked'
-            )
-          : sql<0 | 1>`0`.as('user_liked'),
-      },
-      limit: 25,
-      offset,
-      orderBy: desc(posts.createdAt),
-    })
-
-    return { code: 200, message: 'success', data: queryPosts }
-  } catch (error) {
-    let message = 'Oops, something went wrong. Please try again later.'
-
-    if (error instanceof Error) message = error.message
-
-    return { code: 500, message, data: null }
-  }
-})
-
 export default component$(() => {
   const postsSignal = usePosts()
   const posts = useStore(postsSignal.value.data ?? [])
@@ -95,7 +62,7 @@ export default component$(() => {
       ) {
         loadingMore.value = true
 
-        const newPosts = await getPosts({ offset: posts.length })
+        const newPosts = await postsQuery({ offset: posts.length })
 
         if (newPosts.code !== 200 || !newPosts.data) {
           loadingMore.value = false

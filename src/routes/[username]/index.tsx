@@ -1,10 +1,5 @@
 import { component$, useSignal, useStore, useVisibleTask$ } from '@builder.io/qwik'
-import {
-  type DocumentHead,
-  routeLoader$,
-  useLocation,
-  server$,
-} from '@builder.io/qwik-city'
+import { type DocumentHead, routeLoader$, useLocation } from '@builder.io/qwik-city'
 import { desc, eq, sql } from 'drizzle-orm'
 
 import { likes, posts, users } from '../../db/schema'
@@ -14,6 +9,7 @@ import PostItem from '../../components/home/PostItem'
 import ErrorMessage from '../../components/ErrorMessage'
 import Spinner from '../../components/Spinner'
 import { getIdFromToken } from '../../utils/getIdFromToken'
+import { postsQuery } from '../../procedures/posts'
 
 export const useUserPosts = routeLoader$(async (reqEvent) => {
   try {
@@ -55,46 +51,6 @@ export const useUserPosts = routeLoader$(async (reqEvent) => {
   }
 })
 
-interface getPostsParams {
-  offset: number
-  userId: number
-}
-
-export const getUserPosts = server$(async function ({ offset, userId }: getPostsParams) {
-  try {
-    // Get user id from session token
-    const sessionUserId = await getIdFromToken({ cookie: this.cookie, env: this.env })
-
-    const db = getDb({ env: this.env })
-
-    const queryPosts = await db.query.posts.findMany({
-      where: eq(posts.userId, userId),
-      with: { author: true, likes: { columns: {} } },
-      extras: {
-        likeCount: sql<string>`COUNT(posts_likes.id)`.as('like_count'),
-        userLiked: sessionUserId
-          ? sql<
-              0 | 1
-            >`EXISTS (SELECT 1 FROM ${likes} WHERE likes.post_id = ${posts.id} AND likes.user_id = ${sessionUserId})`.as(
-              'user_liked'
-            )
-          : sql<0 | 1>`0`.as('user_liked'),
-      },
-      limit: 25,
-      offset,
-      orderBy: desc(posts.createdAt),
-    })
-
-    return { code: 200, message: 'success', data: queryPosts }
-  } catch (error) {
-    let message = 'Oops, something went wrong. Please try again later.'
-
-    if (error instanceof Error) message = error.message
-
-    return { code: 500, message, data: null }
-  }
-})
-
 export default component$(() => {
   const profileSignal = useUserPosts()
 
@@ -114,7 +70,7 @@ export default component$(() => {
       ) {
         loadingMore.value = true
 
-        const newPosts = await getUserPosts({ offset: userPosts.length, userId: user.id })
+        const newPosts = await postsQuery({ offset: userPosts.length, userId: user.id })
 
         if (newPosts.code !== 200 || !newPosts.data) {
           loadingMore.value = false

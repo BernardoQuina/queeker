@@ -11,7 +11,7 @@ import { formatDate } from '../../../../utils/dates'
 import { getIdFromToken } from '../../../../utils/getIdFromToken'
 import { useAuthSession } from '../../../plugin@auth'
 import Button from '../../../../components/Button'
-import { like } from '../../../../components/home/PostItem'
+import { likeMutation } from '../../../../procedures/likes'
 
 export const usePost = routeLoader$(async (reqEvent) => {
   try {
@@ -102,7 +102,10 @@ export default component$(() => {
                     post.likeCount = (parseInt(post.likeCount) - 1).toString()
 
                     // send request to server
-                    const likeAction = await like({ postId: post.id, action: 'unlike' })
+                    const likeAction = await likeMutation({
+                      postId: post.id,
+                      action: 'unlike',
+                    })
 
                     if (likeAction.code !== 200) {
                       // revert optimistic update
@@ -115,7 +118,10 @@ export default component$(() => {
                     post.likeCount = (parseInt(post.likeCount) + 1).toString()
 
                     // send request to server
-                    const likeAction = await like({ postId: post.id, action: 'like' })
+                    const likeAction = await likeMutation({
+                      postId: post.id,
+                      action: 'like',
+                    })
 
                     if (likeAction.code !== 200) {
                       // revert optimistic update
