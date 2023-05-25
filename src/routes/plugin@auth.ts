@@ -21,18 +21,24 @@ export const { onRequest, useAuthSession, useAuthSignin, useAuthSignout } = serv
             where: eq(users.username, profile.login.toLowerCase()),
           })
 
+          let userId = user?.id
+
           if (!user) {
-            await db.insert(users).values({
+            const createUser = await db.insert(users).values({
               username: profile.login.toLowerCase(),
               displayName: profile.name,
               image: profile.avatar_url,
             })
+
+            userId = parseInt(createUser.insertId)
           }
 
           return {
             id: profile.id.toString(), // this is not being returned in the session 🫥
             // And I can't add additional fields so I'm combining name and login into one field
-            name: `${profile.name}github_handle:${profile.login.toLowerCase()}`,
+            name: `${
+              profile.name
+            }github_handle:${profile.login.toLowerCase()}db_id:${userId}`,
             image: profile.avatar_url,
           }
         },

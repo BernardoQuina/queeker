@@ -1,24 +1,36 @@
 import { component$, useSignal, useStore, useVisibleTask$ } from '@builder.io/qwik'
 import { type DocumentHead, routeLoader$, server$ } from '@builder.io/qwik-city'
-import { desc } from 'drizzle-orm'
+import { desc, sql } from 'drizzle-orm'
 
 import { likes, posts } from '../db/schema'
 import { getDb } from '../db/db'
-import { countWithColumn } from '../db/helpers'
 import Header from '../components/home/Header'
 import PostForm from '../components/home/PostForm'
 import PostItem from '../components/home/PostItem'
 import ErrorMessage from '../components/ErrorMessage'
 import Spinner from '../components/Spinner'
+import { getIdFromToken } from '../utils/getIdFromToken'
 import { useAuthSession } from './plugin@auth'
 
 export const usePosts = routeLoader$(async (reqEvent) => {
   try {
+    // Get user id from session token
+    const userId = await getIdFromToken({ cookie: reqEvent.cookie, env: reqEvent.env })
+
     const db = getDb(reqEvent)
 
     const queryPosts = await db.query.posts.findMany({
-      with: { author: true },
-      extras: { likeCount: countWithColumn(likes.postId.name).as('likeCount') },
+      with: { author: true, likes: { columns: {} } },
+      extras: {
+        likeCount: sql<string>`COUNT(posts_likes.id)`.as('like_count'),
+        userLiked: userId
+          ? sql<
+              0 | 1
+            >`EXISTS (SELECT 1 FROM ${likes} WHERE likes.post_id = ${posts.id} AND likes.user_id = ${userId})`.as(
+              'user_liked'
+            )
+          : sql<0 | 1>`0`.as('user_liked'),
+      },
       limit: 25,
       orderBy: desc(posts.createdAt),
     })
@@ -35,11 +47,23 @@ export const usePosts = routeLoader$(async (reqEvent) => {
 
 export const getPosts = server$(async function ({ offset }: { offset: number }) {
   try {
+    // Get user id from session token
+    const userId = await getIdFromToken({ cookie: this.cookie, env: this.env })
+
     const db = getDb({ env: this.env })
 
     const queryPosts = await db.query.posts.findMany({
-      with: { author: true },
-      extras: { likeCount: countWithColumn(likes.postId.name).as('likeCount') },
+      with: { author: true, likes: { columns: {} } },
+      extras: {
+        likeCount: sql<string>`COUNT(posts_likes.id)`.as('like_count'),
+        userLiked: userId
+          ? sql<
+              0 | 1
+            >`EXISTS (SELECT 1 FROM ${likes} WHERE likes.post_id = ${posts.id} AND likes.user_id = ${userId})`.as(
+              'user_liked'
+            )
+          : sql<0 | 1>`0`.as('user_liked'),
+      },
       limit: 25,
       offset,
       orderBy: desc(posts.createdAt),
@@ -66,7 +90,7 @@ export default component$(() => {
   useVisibleTask$(({ cleanup }) => {
     const nearBottom = async () => {
       if (
-        window.innerHeight + window.scrollY >= document.body.offsetHeight - 300 &&
+        window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 &&
         !loadingMore.value
       ) {
         loadingMore.value = true

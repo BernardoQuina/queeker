@@ -27,7 +27,7 @@ html {
   color-scheme: light;
 }
 
-.dark * {
+.dark *:not(svg):not(path):not(line):not(circle) {
   @apply text-slate-50;
   @apply border-slate-600;
 }

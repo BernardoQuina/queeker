@@ -1,7 +1,6 @@
 import { $, component$, useSignal, useVisibleTask$ } from '@builder.io/qwik'
 import { server$, z } from '@builder.io/qwik-city'
 import { eq, sql } from 'drizzle-orm'
-import { decode } from '@auth/core/jwt'
 import { Image } from '@unpic/qwik'
 import type { DefaultSession } from '@auth/core/types'
 import { Ratelimit } from '@upstash/ratelimit'
@@ -13,6 +12,7 @@ import { type PostWithUserAndLikeCount, posts, users } from '../../db/schema'
 import Button from '../Button'
 import Spinner from '../Spinner'
 import Toast from '../Toast'
+import { getIdFromToken } from '../../utils/getIdFromToken'
 
 const postInput = z.object({
   content: z.string(),
@@ -22,46 +22,41 @@ type PostInput = z.infer<typeof postInput>
 
 export const addPost = server$(async function (post: PostInput) {
   try {
-    const sessionToken =
-      this.env.get('NODE_ENV') === 'development'
-        ? this.cookie.get('next-auth.session-token')
-        : this.cookie.get('__Secure-next-auth.session-token')
+    // Get id from session
+    const userId = await getIdFromToken({ cookie: this.cookie, env: this.env })
 
-    if (!sessionToken || !sessionToken?.value) throw new Error('Unauthorized')
+    if (!userId) return { code: 401, message: 'Unauthorized', data: null }
 
-    const decoded = await decode({
-      token: sessionToken.value,
-      secret: this.env.get('AUTH_SECRET') as string,
-    })
-
-    const username = decoded?.name?.split('github_handle:')[1]
-
-    if (!username) return { code: 401, message: 'Unauthorized', data: null }
-
+    // Rate limit
     const rateLimit = new Ratelimit({
       redis: Redis.fromEnv(),
       limiter: Ratelimit.slidingWindow(2, '30 s'),
       analytics: true,
     })
 
-    const { success } = await rateLimit.limit(username)
+    const { success } = await rateLimit.limit(userId.toString())
 
     if (!success) return { code: 429, message: 'Too many requests', data: null }
 
+    // Get user
     const db = getDb({ env: this.env })
 
-    const user = await db.query.users.findFirst({ where: eq(users.username, username) })
+    const user = await db.query.users.findFirst({ where: eq(users.id, userId) })
 
     if (!user) return { code: 401, message: 'Unauthorized', data: null }
 
+    // Insert and return new post
     const newPostQuery = await db
       .insert(posts)
       .values({ content: post.content, userId: user.id })
 
     const newPost = await db.query.posts.findFirst({
       where: eq(posts.id, parseInt(newPostQuery.insertId)),
-      with: { author: true },
-      extras: { likeCount: sql<string>`0`.as('likeCount') },
+      with: { author: true, likes: { columns: {} } },
+      extras: {
+        likeCount: sql<string>`0`.as('like_count'),
+        userLiked: sql<0>`0`.as('user_liked'),
+      },
     })
 
     return { code: 200, message: 'success', data: newPost }

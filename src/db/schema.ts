@@ -46,6 +46,11 @@ export const likes = mysqlTable('likes', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })
 
+export const likesRelations = relations(likes, ({ one }) => ({
+  user: one(users, { fields: [likes.userId], references: [users.id] }),
+  post: one(posts, { fields: [likes.postId], references: [posts.id] }),
+}))
+
 //
 // Types
 //
@@ -56,4 +61,5 @@ export type Like = InferModel<typeof likes>
 
 export type PostWithUserAndLikeCount = Post & { author: User | null } & {
   likeCount: string
+  userLiked: 1 | 0
 }
