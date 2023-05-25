@@ -3,8 +3,8 @@ import { LuArrowLeft } from '@qwikest/icons/lucide'
 import { useNavigate, useLocation } from '@builder.io/qwik-city'
 import { Image } from '@unpic/qwik'
 
-import type { User } from '../../db/schema'
-import Button from '../Button'
+import type { User } from '../../../db/schema'
+import Button from '../../global/Button'
 
 interface Props {
   user: User

@@ -4,9 +4,9 @@ import { HiHeartOutline, HiHeartSolid } from '@qwikest/icons/heroicons'
 
 import { type PostWithUserAndLikeCount } from '../../db/schema'
 import { timeAgo } from '../../utils/dates'
-import Button from '../Button'
 import { useAuthSession } from '../../routes/plugin@auth'
 import { likeMutation } from '../../procedures/likes'
+import Button from './Button'
 
 interface Props {
   post: PostWithUserAndLikeCount

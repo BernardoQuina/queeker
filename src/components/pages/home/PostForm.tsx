@@ -3,11 +3,11 @@ import { Image } from '@unpic/qwik'
 import type { DefaultSession } from '@auth/core/types'
 import { useCSSTransition } from 'qwik-transition'
 
-import { type PostWithUserAndLikeCount } from '../../db/schema'
-import Button from '../Button'
-import Spinner from '../Spinner'
-import Toast from '../Toast'
-import { addPostMutation } from '../../procedures/posts'
+import { type PostWithUserAndLikeCount } from '../../../db/schema'
+import Button from '../../global/Button'
+import Spinner from '../../global/Spinner'
+import Toast from '../../global/Toast'
+import { addPostMutation } from '../../../procedures/posts'
 
 interface Props {
   posts: PostWithUserAndLikeCount[]

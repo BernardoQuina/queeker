@@ -3,9 +3,9 @@ import { Form, useLocation } from '@builder.io/qwik-city'
 import { LuLogOut, LuSun, LuMoon } from '@qwikest/icons/lucide'
 // @qwikest/icons is causing a qwik warning of duplicate implementation of JSXNode
 
-import { toggleTheme } from '../utils/toggleTheme'
-import { useAuthSession, useAuthSignin, useAuthSignout } from '../routes/plugin@auth'
-import { GitHubLogo } from './icons/GithubLogo'
+import { useAuthSession, useAuthSignin, useAuthSignout } from '../../routes/plugin@auth'
+import { toggleTheme } from '../../utils/toggleTheme'
+import { GitHubLogo } from '../global/icons/GithubLogo'
 import Button from './Button'
 
 interface Props {

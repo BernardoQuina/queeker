@@ -5,12 +5,12 @@ import { HiHeartOutline, HiHeartSolid } from '@qwikest/icons/heroicons'
 
 import { likes, posts } from '../../../../db/schema'
 import { getDb } from '../../../../db/db'
-import ErrorMessage from '../../../../components/ErrorMessage'
-import Header from '../../../../components/post/Header'
+import ErrorMessage from '../../../../components/global/ErrorMessage'
+import Header from '../../../../components/pages/post/Header'
 import { formatDate } from '../../../../utils/dates'
 import { getIdFromToken } from '../../../../utils/getIdFromToken'
 import { useAuthSession } from '../../../plugin@auth'
-import Button from '../../../../components/Button'
+import Button from '../../../../components/global/Button'
 import { likeMutation } from '../../../../procedures/likes'
 
 export const usePost = routeLoader$(async (reqEvent) => {

@@ -1,7 +1,7 @@
 import { component$, Slot } from '@builder.io/qwik'
 import { routeLoader$ } from '@builder.io/qwik-city'
 
-import Footer from '../components/Footer'
+import Footer from '../components/global/Footer'
 
 export const useThemeLoader = routeLoader$((reqEvent) => {
   const theme = reqEvent.cookie.get('theme')
