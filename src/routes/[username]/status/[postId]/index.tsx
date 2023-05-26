@@ -28,7 +28,14 @@ export const usePost = routeLoader$(async (reqEvent) => {
       where: eq(posts.id, postId),
       with: { author: true, likes: { columns: {} } },
       extras: {
-        likeCount: sql<string>`COUNT(posts_likes.id)`.as('like_count'),
+        likeCount:
+          sql<string>`(SELECT COUNT(${likes.id.name}) FROM ${likes} WHERE likes.post_id = ${posts.id})`.as(
+            'like_count'
+          ),
+        replyCount:
+          sql<string>`(SELECT COUNT(${posts.id}) FROM ${posts} WHERE posts.reply_to_post_id = ${posts.id})`.as(
+            'reply_count'
+          ),
         userLiked: userId
           ? sql<
               0 | 1

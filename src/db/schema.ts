@@ -31,11 +31,15 @@ export const posts = mysqlTable('posts', {
   id: serial('id').primaryKey(),
   content: text('content').notNull(),
   userId: int('user_id').notNull(),
+  replyToPostId: int('reply_to_post_id'),
+  repostOfPostId: int('repost_of_post_id'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })
 
 export const postsRelations = relations(posts, ({ one, many }) => ({
   author: one(users, { fields: [posts.userId], references: [users.id] }),
+  replyToPost: one(posts, { fields: [posts.replyToPostId], references: [posts.id] }),
+  repostOfPost: one(posts, { fields: [posts.repostOfPostId], references: [posts.id] }),
   likes: many(likes),
 }))
 

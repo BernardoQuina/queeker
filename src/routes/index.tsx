@@ -21,9 +21,16 @@ export const usePosts = routeLoader$(async (reqEvent) => {
     const db = getDb(reqEvent)
 
     const queryPosts = await db.query.posts.findMany({
-      with: { author: true, likes: { columns: {} } },
+      with: { author: true },
       extras: {
-        likeCount: sql<string>`COUNT(posts_likes.id)`.as('like_count'),
+        likeCount:
+          sql<string>`(SELECT COUNT(${likes.id.name}) FROM ${likes} WHERE likes.post_id = ${posts.id})`.as(
+            'like_count'
+          ),
+        replyCount:
+          sql<string>`(SELECT COUNT(${posts.id}) FROM ${posts} WHERE posts.reply_to_post_id = ${posts.id})`.as(
+            'reply_count'
+          ),
         userLiked: userId
           ? sql<
               0 | 1
@@ -35,6 +42,8 @@ export const usePosts = routeLoader$(async (reqEvent) => {
       limit: 25,
       orderBy: desc(posts.createdAt),
     })
+
+    console.log({ queryPosts })
 
     return { code: 200, message: 'success', data: queryPosts }
   } catch (error) {

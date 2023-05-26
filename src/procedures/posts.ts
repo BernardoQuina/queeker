@@ -25,11 +25,18 @@ export const postsQuery = server$(async function ({ offset, userId }: PostsQuery
       where: userId ? eq(posts.userId, userId) : undefined,
       with: { author: true, likes: { columns: {} } },
       extras: {
-        likeCount: sql<string>`COUNT(posts_likes.id)`.as('like_count'),
+        likeCount:
+          sql<string>`(SELECT COUNT(${likes.id.name}) FROM ${likes} WHERE likes.post_id = ${posts.id})`.as(
+            'like_count'
+          ),
+        replyCount:
+          sql<string>`(SELECT COUNT(${posts.id}) FROM ${posts} WHERE posts.reply_to_post_id = ${posts.id})`.as(
+            'reply_count'
+          ),
         userLiked: sessionUserId
           ? sql<
               0 | 1
-            >`EXISTS (SELECT 1 FROM ${likes} WHERE likes.post_id = ${posts.id} AND likes.user_id = ${sessionUserId})`.as(
+            >`EXISTS (SELECT 1 FROM ${likes} WHERE likes.post_id = ${posts.id} AND likes.user_id = ${userId})`.as(
               'user_liked'
             )
           : sql<0 | 1>`0`.as('user_liked'),
