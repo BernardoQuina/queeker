@@ -1,61 +1,21 @@
 import { component$, useStore } from '@builder.io/qwik'
-import { type DocumentHead, routeLoader$, useLocation } from '@builder.io/qwik-city'
-import { eq, sql } from 'drizzle-orm'
+import {
+  type DocumentHead,
+  routeLoader$,
+  useLocation,
+  server$,
+} from '@builder.io/qwik-city'
 import { HiHeartOutline, HiHeartSolid } from '@qwikest/icons/heroicons'
 
-import { likes, posts } from '../../../../db/schema'
-import { getDb } from '../../../../db/db'
 import ErrorMessage from '../../../../components/global/ErrorMessage'
 import Header from '../../../../components/pages/post/Header'
 import { formatDate } from '../../../../utils/dates'
-import { getIdFromToken } from '../../../../utils/getIdFromToken'
 import { useAuthSession } from '../../../plugin@auth'
 import Button from '../../../../components/global/Button'
-import { likeMutation } from '../../../../procedures/likes'
+import { procedures } from '../../../../procedures'
 
-export const usePost = routeLoader$(async (reqEvent) => {
-  try {
-    // Get user id from session token
-    const userId = await getIdFromToken({ cookie: reqEvent.cookie, env: reqEvent.env })
-
-    const db = getDb(reqEvent)
-
-    const postId = parseInt(reqEvent.params.postId)
-
-    if (isNaN(postId)) return { code: 400, message: 'Invalid post id', data: null }
-
-    const post = await db.query.posts.findFirst({
-      where: eq(posts.id, postId),
-      with: { author: true, likes: { columns: {} } },
-      extras: {
-        likeCount:
-          sql<string>`(SELECT COUNT(${likes.id.name}) FROM ${likes} WHERE likes.post_id = ${posts.id})`.as(
-            'like_count'
-          ),
-        replyCount:
-          sql<string>`(SELECT COUNT(${posts.id}) FROM ${posts} WHERE posts.reply_to_post_id = ${posts.id})`.as(
-            'reply_count'
-          ),
-        userLiked: userId
-          ? sql<
-              0 | 1
-            >`EXISTS (SELECT 1 FROM ${likes} WHERE likes.post_id = ${posts.id} AND likes.user_id = ${userId})`.as(
-              'user_liked'
-            )
-          : sql<0 | 1>`0`.as('user_liked'),
-      },
-    })
-
-    if (!post) return { code: 404, message: 'Qweek not found', data: null }
-
-    return { code: 200, message: 'success', data: { post } }
-  } catch (error) {
-    let message = 'Oops, something went wrong. Please try again later.'
-
-    if (error instanceof Error) message = error.message
-
-    return { code: 500, message, data: null }
-  }
+export const usePost = routeLoader$(async (req) => {
+  return procedures(req).posts.query.getById({ id: parseInt(req.params.postId) })
 })
 
 export default component$(() => {
@@ -109,10 +69,12 @@ export default component$(() => {
                     post.likeCount = (parseInt(post.likeCount) - 1).toString()
 
                     // send request to server
-                    const likeAction = await likeMutation({
-                      postId: post.id,
-                      action: 'unlike',
-                    })
+                    const likeAction = await server$(async function () {
+                      return await procedures(this).likes.mutation.like({
+                        postId: post.id,
+                        action: 'unlike',
+                      })
+                    })()
 
                     if (likeAction.code !== 200) {
                       // revert optimistic update
@@ -125,10 +87,12 @@ export default component$(() => {
                     post.likeCount = (parseInt(post.likeCount) + 1).toString()
 
                     // send request to server
-                    const likeAction = await likeMutation({
-                      postId: post.id,
-                      action: 'like',
-                    })
+                    const likeAction = await server$(async function () {
+                      return await procedures(this).likes.mutation.like({
+                        postId: post.id,
+                        action: 'like',
+                      })
+                    })()
 
                     if (likeAction.code !== 200) {
                       // revert optimistic update

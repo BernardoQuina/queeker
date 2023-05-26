@@ -1,54 +1,35 @@
 import { component$, useSignal, useStore, useVisibleTask$ } from '@builder.io/qwik'
-import { type DocumentHead, routeLoader$, useLocation } from '@builder.io/qwik-city'
-import { desc, eq, sql } from 'drizzle-orm'
+import {
+  type DocumentHead,
+  routeLoader$,
+  useLocation,
+  server$,
+} from '@builder.io/qwik-city'
 
-import { likes, posts, users } from '../../db/schema'
-import { getDb } from '../../db/db'
 import Header from '../../components/pages/profile/Header'
 import PostItem from '../../components/global/PostItem'
 import ErrorMessage from '../../components/global/ErrorMessage'
 import Spinner from '../../components/global/Spinner'
-import { getIdFromToken } from '../../utils/getIdFromToken'
-import { postsQuery } from '../../procedures/posts'
+import { procedures } from '../../procedures'
 
-export const useUserPosts = routeLoader$(async (reqEvent) => {
-  try {
-    // Get user id from session token
-    const userId = await getIdFromToken({ cookie: reqEvent.cookie, env: reqEvent.env })
+export const useUserPosts = routeLoader$(async (req) => {
+  const userRes = await procedures(req).users.query.getByUsername({
+    username: req.params.username,
+  })
 
-    const db = getDb(reqEvent)
-
-    const username = reqEvent.params.username
-
-    const user = await db.query.users.findFirst({ where: eq(users.username, username) })
-
-    if (!user) return { code: 404, message: 'User not found', data: null }
-
-    const userPosts = await db.query.posts.findMany({
-      where: eq(posts.userId, user.id),
-      with: { author: true, likes: { columns: {} } },
-      extras: {
-        likeCount: sql<string>`COUNT(posts_likes.id)`.as('like_count'),
-        userLiked: userId
-          ? sql<
-              0 | 1
-            >`EXISTS (SELECT 1 FROM ${likes} WHERE likes.post_id = ${posts.id} AND likes.user_id = ${userId})`.as(
-              'user_liked'
-            )
-          : sql<0 | 1>`0`.as('user_liked'),
-      },
-      limit: 25,
-      orderBy: desc(posts.createdAt),
-    })
-
-    return { code: 200, message: 'success', data: { user: user, posts: userPosts } }
-  } catch (error) {
-    let message = 'Oops, something went wrong. Please try again later.'
-
-    if (error instanceof Error) message = error.message
-
-    return { code: 500, message, data: null }
+  if (userRes.code !== 200 || !userRes.data) {
+    return { code: userRes.code, message: userRes.message, data: null }
   }
+
+  const user = userRes.data.user
+
+  const posts = await procedures(req).posts.query.getMany({ userId: user.id })
+
+  if (posts.code !== 200 || !posts.data) {
+    return { code: posts.code, message: posts.message, data: null }
+  }
+
+  return { code: 200, message: 'success', data: { user, posts: posts.data } }
 })
 
 export default component$(() => {
@@ -70,7 +51,12 @@ export default component$(() => {
       ) {
         loadingMore.value = true
 
-        const newPosts = await postsQuery({ offset: userPosts.length, userId: user.id })
+        const newPosts = await server$(async function () {
+          return procedures(this).posts.query.getMany({
+            userId: user.id,
+            offset: userPosts.length,
+          })
+        })()
 
         if (newPosts.code !== 200 || !newPosts.data) {
           loadingMore.value = false

@@ -1,11 +1,12 @@
 import { component$ } from '@builder.io/qwik'
+import { server$ } from '@builder.io/qwik-city'
 import { Image } from '@unpic/qwik'
 import { HiHeartOutline, HiHeartSolid } from '@qwikest/icons/heroicons'
 
 import { type PostWithUserAndLikeCount } from '../../db/schema'
 import { timeAgo } from '../../utils/dates'
 import { useAuthSession } from '../../routes/plugin@auth'
-import { likeMutation } from '../../procedures/likes'
+import { procedures } from '../../procedures'
 import Button from './Button'
 
 interface Props {
@@ -80,7 +81,12 @@ export default component$(({ post }: Props) => {
             post.likeCount = (parseInt(post.likeCount) - 1).toString()
 
             // send request to server
-            const likeAction = await likeMutation({ postId: post.id, action: 'unlike' })
+            const likeAction = await server$(async function () {
+              return procedures(this).likes.mutation.like({
+                postId: post.id,
+                action: 'unlike',
+              })
+            })()
 
             if (likeAction.code !== 200) {
               // revert optimistic update
@@ -93,7 +99,12 @@ export default component$(({ post }: Props) => {
             post.likeCount = (parseInt(post.likeCount) + 1).toString()
 
             // send request to server
-            const likeAction = await likeMutation({ postId: post.id, action: 'like' })
+            const likeAction = await server$(async function () {
+              return procedures(this).likes.mutation.like({
+                postId: post.id,
+                action: 'like',
+              })
+            })()
 
             if (likeAction.code !== 200) {
               // revert optimistic update

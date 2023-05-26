@@ -1,4 +1,4 @@
-import { server$, z } from '@builder.io/qwik-city'
+import { type RequestEventLoader, type RequestEventBase, z } from '@builder.io/qwik-city'
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
 import { and, eq } from 'drizzle-orm'
@@ -14,56 +14,65 @@ const likeInput = z.object({
 
 type LikeInput = z.infer<typeof likeInput>
 
-export const likeMutation = server$(async function ({ postId, action }: LikeInput) {
-  try {
-    // Get id from session
-    const userId = await getIdFromToken({ cookie: this.cookie, env: this.env })
+export const likesProcedures = ({
+  env,
+  cookie,
+}: RequestEventLoader | RequestEventBase) => {
+  return {
+    mutation: {
+      like: async ({ postId, action }: LikeInput) => {
+        try {
+          // Get id from session
+          const userId = await getIdFromToken({ cookie, env })
 
-    if (!userId) return { code: 401, message: 'Unauthorized', data: null }
+          if (!userId) return { code: 401, message: 'Unauthorized', data: null }
 
-    // Rate limit
-    const rateLimit = new Ratelimit({
-      redis: Redis.fromEnv(),
-      limiter: Ratelimit.slidingWindow(4, '10 s'),
-      analytics: true,
-    })
+          // Rate limit
+          const rateLimit = new Ratelimit({
+            redis: Redis.fromEnv(),
+            limiter: Ratelimit.slidingWindow(4, '10 s'),
+            analytics: true,
+          })
 
-    const { success } = await rateLimit.limit(userId.toString())
+          const { success } = await rateLimit.limit(userId.toString())
 
-    if (!success) return { code: 429, message: 'Too many requests', data: null }
+          if (!success) return { code: 429, message: 'Too many requests', data: null }
 
-    // Get user
-    const db = getDb({ env: this.env })
+          // Get user
+          const db = getDb({ env })
 
-    const user = await db.query.users.findFirst({ where: eq(users.id, userId) })
+          const user = await db.query.users.findFirst({ where: eq(users.id, userId) })
 
-    if (!user) return { code: 401, message: 'Unauthorized', data: null }
+          if (!user) return { code: 401, message: 'Unauthorized', data: null }
 
-    // Check if user has already liked post
-    const like = await db.query.likes.findFirst({
-      where: (table) => and(eq(table.postId, postId), eq(table.userId, user.id)),
-    })
+          // Check if user has already liked post
+          const like = await db.query.likes.findFirst({
+            where: (table) => and(eq(table.postId, postId), eq(table.userId, user.id)),
+          })
 
-    if (action === 'like') {
-      if (like) return { code: 200, message: 'success', data: null }
+          if (action === 'like') {
+            if (like) return { code: 200, message: 'success', data: null }
 
-      await db.insert(likes).values({ postId, userId: user.id })
+            await db.insert(likes).values({ postId, userId: user.id })
 
-      return { code: 200, message: 'success', data: null }
-    } else {
-      if (!like) return { code: 200, message: 'success', data: null }
+            return { code: 200, message: 'success', data: null }
+          } else {
+            if (!like) return { code: 200, message: 'success', data: null }
 
-      await db
-        .delete(likes)
-        .where(and(eq(likes.postId, postId), eq(likes.userId, user.id)))
+            await db
+              .delete(likes)
+              .where(and(eq(likes.postId, postId), eq(likes.userId, user.id)))
 
-      return { code: 200, message: 'success', data: null }
-    }
-  } catch (error) {
-    let message = 'Oops, something went wrong. Please try again later.'
+            return { code: 200, message: 'success', data: null }
+          }
+        } catch (error) {
+          let message = 'Oops, something went wrong. Please try again later.'
 
-    if (error instanceof Error) message = error.message
+          if (error instanceof Error) message = error.message
 
-    return { code: 500, message, data: null }
+          return { code: 500, message, data: null }
+        }
+      },
+    },
   }
-})
+}

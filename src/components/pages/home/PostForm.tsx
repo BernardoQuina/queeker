@@ -1,4 +1,5 @@
 import { $, component$, useSignal, useVisibleTask$ } from '@builder.io/qwik'
+import { server$ } from '@builder.io/qwik-city'
 import { Image } from '@unpic/qwik'
 import type { DefaultSession } from '@auth/core/types'
 import { useCSSTransition } from 'qwik-transition'
@@ -7,7 +8,7 @@ import { type PostWithUserAndLikeCount } from '../../../db/schema'
 import Button from '../../global/Button'
 import Spinner from '../../global/Spinner'
 import Toast from '../../global/Toast'
-import { addPostMutation } from '../../../procedures/posts'
+import { procedures } from '../../../procedures'
 
 interface Props {
   posts: PostWithUserAndLikeCount[]
@@ -44,7 +45,9 @@ export default component$(({ posts, user }: Props) => {
       onSubmit$={async () => {
         loading.value = true
 
-        const newPost = await addPostMutation({ content: content.value })
+        const newPost = await server$(async function () {
+          return procedures(this).posts.mutation.add({ content: content.value })
+        })()
 
         if (newPost.code !== 200 || !newPost.data) {
           loading.value = false

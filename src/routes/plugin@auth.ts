@@ -1,36 +1,36 @@
 import { serverAuth$ } from '@builder.io/qwik-auth'
 import GitHub from '@auth/core/providers/github'
 import type { Provider } from '@auth/core/providers'
-import { eq } from 'drizzle-orm'
 
-import { getDb } from '../db/db'
-import { users } from '../db/schema'
+import { procedures } from '../procedures'
 
 export const { onRequest, useAuthSession, useAuthSignin, useAuthSignout } = serverAuth$(
-  ({ env }) => ({
-    secret: env.get('AUTH_SECRET'),
+  (req) => ({
+    secret: req.env.get('AUTH_SECRET'),
     trustHost: true,
     providers: [
       GitHub({
-        clientId: env.get('GITHUB_ID') as string,
-        clientSecret: env.get('GITHUB_SECRET') as string,
+        clientId: req.env.get('GITHUB_ID') as string,
+        clientSecret: req.env.get('GITHUB_SECRET') as string,
         profile: async (profile) => {
-          const db = getDb({ env })
-
-          const user = await db.query.users.findFirst({
-            where: eq(users.username, profile.login.toLowerCase()),
+          const userRes = await procedures(req).users.query.getByUsername({
+            username: req.params.username,
           })
 
-          let userId = user?.id
+          let userId = userRes.data?.user.id
 
-          if (!user) {
-            const createUser = await db.insert(users).values({
-              username: profile.login.toLowerCase(),
+          if (!userRes.data?.user) {
+            const createUser = await procedures(req).users.mutations.create({
+              username: profile.login,
               displayName: profile.name,
               image: profile.avatar_url,
             })
 
-            userId = parseInt(createUser.insertId)
+            if (createUser.code !== 200 || !createUser.data) {
+              throw new Error(createUser.message)
+            }
+
+            userId = createUser.data.userId
           }
 
           return {
