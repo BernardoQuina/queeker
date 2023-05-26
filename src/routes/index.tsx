@@ -13,6 +13,10 @@ export const usePosts = routeLoader$(async (req) => {
   return procedures(req).posts.query.getMany({})
 })
 
+const getMorePosts = server$(async function (offset: number) {
+  return procedures(this).posts.query.getMany({ offset })
+})
+
 export default component$(() => {
   const postsSignal = usePosts()
   const posts = useStore(postsSignal.value.data ?? [])
@@ -29,9 +33,7 @@ export default component$(() => {
       ) {
         loadingMore.value = true
 
-        const newPosts = await server$(async function () {
-          return procedures(this).posts.query.getMany({ offset: posts.length })
-        })()
+        const newPosts = await getMorePosts(posts.length)
 
         if (newPosts.code !== 200 || !newPosts.data) {
           loadingMore.value = false
