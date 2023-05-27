@@ -14,7 +14,7 @@ export const { onRequest, useAuthSession, useAuthSignin, useAuthSignout } = serv
         clientSecret: req.env.get('GITHUB_SECRET') as string,
         profile: async (profile) => {
           const userRes = await procedures(req).users.query.getByUsername({
-            username: req.params.username,
+            username: profile.login.toLowerCase(),
           })
 
           let userId = userRes.data?.user.id
