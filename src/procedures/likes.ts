@@ -12,7 +12,7 @@ const likeInput = z.object({
   action: z.enum(['like', 'unlike']),
 })
 
-type LikeInput = z.infer<typeof likeInput>
+export type LikeInput = z.infer<typeof likeInput>
 
 export const likesProcedures = ({
   env,

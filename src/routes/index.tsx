@@ -7,13 +7,14 @@ import PostItem from '../components/global/PostItem'
 import ErrorMessage from '../components/global/ErrorMessage'
 import Spinner from '../components/global/Spinner'
 import { procedures } from '../procedures'
+import type { GetManyParams } from '../procedures/posts'
 import { useAuthSession } from './plugin@auth'
 
 export const usePosts = routeLoader$(async (req) => {
   return procedures(req).posts.query.getMany({})
 })
 
-const getMorePosts = server$(async function (offset: number) {
+const getMorePosts = server$(async function ({ offset }: GetManyParams) {
   return procedures(this).posts.query.getMany({ offset })
 })
 
@@ -33,7 +34,7 @@ export default component$(() => {
       ) {
         loadingMore.value = true
 
-        const newPosts = await getMorePosts(posts.length)
+        const newPosts = await getMorePosts({ offset: posts.length })
 
         if (newPosts.code !== 200 || !newPosts.data) {
           loadingMore.value = false

@@ -11,6 +11,7 @@ import PostItem from '../../components/global/PostItem'
 import ErrorMessage from '../../components/global/ErrorMessage'
 import Spinner from '../../components/global/Spinner'
 import { procedures } from '../../procedures'
+import type { GetManyParams } from '../../procedures/posts'
 
 export const useUserPosts = routeLoader$(async (req) => {
   const userRes = await procedures(req).users.query.getByUsername({
@@ -32,6 +33,10 @@ export const useUserPosts = routeLoader$(async (req) => {
   return { code: 200, message: 'success', data: { user, posts: posts.data } }
 })
 
+const getMorePosts = server$(async function ({ offset }: GetManyParams) {
+  return procedures(this).posts.query.getMany({ offset })
+})
+
 export default component$(() => {
   const profileSignal = useUserPosts()
 
@@ -51,12 +56,7 @@ export default component$(() => {
       ) {
         loadingMore.value = true
 
-        const newPosts = await server$(async function () {
-          return procedures(this).posts.query.getMany({
-            userId: user.id,
-            offset: userPosts.length,
-          })
-        })()
+        const newPosts = await getMorePosts({ offset: userPosts.length })
 
         if (newPosts.code !== 200 || !newPosts.data) {
           loadingMore.value = false

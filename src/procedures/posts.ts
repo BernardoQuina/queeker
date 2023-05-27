@@ -7,24 +7,24 @@ import { getDb } from '../db/db'
 import { likes, posts, users } from '../db/schema'
 import { getIdFromToken } from '../utils/getIdFromToken'
 
-const getAllParams = z.object({
+const getManyParams = z.object({
   offset: z.number().optional(),
   userId: z.number().optional(),
 })
 
-type GetAllParams = z.infer<typeof getAllParams>
+export type GetManyParams = z.infer<typeof getManyParams>
 
 const getByIdParams = z.object({
   id: z.number(),
 })
 
-type GetByIdParams = z.infer<typeof getByIdParams>
+export type GetByIdParams = z.infer<typeof getByIdParams>
 
 const addPostInput = z.object({
   content: z.string(),
 })
 
-type AddPostInput = z.infer<typeof addPostInput>
+export type AddPostInput = z.infer<typeof addPostInput>
 
 export const postsProcedures = ({
   cookie,
@@ -32,7 +32,7 @@ export const postsProcedures = ({
 }: RequestEventLoader | RequestEventBase) => {
   return {
     query: {
-      getMany: async ({ offset, userId }: GetAllParams) => {
+      getMany: async ({ offset, userId }: GetManyParams) => {
         try {
           // Get user id from session token
           const sessionUserId = await getIdFromToken({ cookie, env })

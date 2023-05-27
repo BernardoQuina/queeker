@@ -13,9 +13,14 @@ import { formatDate } from '../../../../utils/dates'
 import { useAuthSession } from '../../../plugin@auth'
 import Button from '../../../../components/global/Button'
 import { procedures } from '../../../../procedures'
+import type { LikeInput } from '../../../../procedures/likes'
 
 export const usePost = routeLoader$(async (req) => {
   return procedures(req).posts.query.getById({ id: parseInt(req.params.postId) })
+})
+
+const likePost = server$(async function ({ postId, action }: LikeInput) {
+  return procedures(this).likes.mutation.like({ postId, action })
 })
 
 export default component$(() => {
@@ -69,14 +74,9 @@ export default component$(() => {
                     post.likeCount = (parseInt(post.likeCount) - 1).toString()
 
                     // send request to server
-                    const likeAction = await server$(async function () {
-                      return await procedures(this).likes.mutation.like({
-                        postId: post.id,
-                        action: 'unlike',
-                      })
-                    })()
+                    const unlike = await likePost({ postId: post.id, action: 'unlike' })
 
-                    if (likeAction.code !== 200) {
+                    if (unlike.code !== 200) {
                       // revert optimistic update
                       post.userLiked = 1
                       post.likeCount = (parseInt(post.likeCount) + 1).toString()
@@ -87,14 +87,9 @@ export default component$(() => {
                     post.likeCount = (parseInt(post.likeCount) + 1).toString()
 
                     // send request to server
-                    const likeAction = await server$(async function () {
-                      return await procedures(this).likes.mutation.like({
-                        postId: post.id,
-                        action: 'like',
-                      })
-                    })()
+                    const like = await likePost({ postId: post.id, action: 'like' })
 
-                    if (likeAction.code !== 200) {
+                    if (like.code !== 200) {
                       // revert optimistic update
                       post.userLiked = 0
                       post.likeCount = (parseInt(post.likeCount) - 1).toString()

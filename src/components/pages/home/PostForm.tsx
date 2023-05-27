@@ -9,6 +9,11 @@ import Button from '../../global/Button'
 import Spinner from '../../global/Spinner'
 import Toast from '../../global/Toast'
 import { procedures } from '../../../procedures'
+import type { AddPostInput } from '../../../procedures/posts'
+
+const addPost = server$(async function ({ content }: AddPostInput) {
+  return procedures(this).posts.mutation.add({ content })
+})
 
 interface Props {
   posts: PostWithUserAndLikeCount[]
@@ -45,9 +50,7 @@ export default component$(({ posts, user }: Props) => {
       onSubmit$={async () => {
         loading.value = true
 
-        const newPost = await server$(async function () {
-          return procedures(this).posts.mutation.add({ content: content.value })
-        })()
+        const newPost = await addPost({ content: content.value })
 
         if (newPost.code !== 200 || !newPost.data) {
           loading.value = false
