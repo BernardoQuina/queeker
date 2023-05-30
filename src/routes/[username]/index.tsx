@@ -24,7 +24,10 @@ export const useUserPosts = routeLoader$(async (req) => {
 
   const user = userRes.data.user
 
-  const posts = await procedures(req).posts.query.getMany({ userId: user.id })
+  const posts = await procedures(req).posts.query.getMany({
+    userId: user.id,
+    noReplies: true,
+  })
 
   if (posts.code !== 200 || !posts.data) {
     return { code: posts.code, message: posts.message, data: null }
@@ -33,8 +36,8 @@ export const useUserPosts = routeLoader$(async (req) => {
   return { code: 200, message: 'success', data: { user, posts: posts.data } }
 })
 
-const getMorePosts = server$(async function ({ offset }: GetManyParams) {
-  return procedures(this).posts.query.getMany({ offset })
+const getMorePosts = server$(async function ({ offset, userId }: GetManyParams) {
+  return procedures(this).posts.query.getMany({ offset, userId, noReplies: true })
 })
 
 export default component$(() => {
@@ -56,7 +59,7 @@ export default component$(() => {
       ) {
         loadingMore.value = true
 
-        const newPosts = await getMorePosts({ offset: userPosts.length })
+        const newPosts = await getMorePosts({ offset: userPosts.length, userId: user.id })
 
         if (newPosts.code !== 200 || !newPosts.data) {
           loadingMore.value = false

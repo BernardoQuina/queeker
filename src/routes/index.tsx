@@ -11,11 +11,11 @@ import type { GetManyParams } from '../procedures/posts'
 import { useAuthSession } from './plugin@auth'
 
 export const usePosts = routeLoader$(async (req) => {
-  return procedures(req).posts.query.getMany({})
+  return procedures(req).posts.query.getMany({ noReplies: true })
 })
 
 const getMorePosts = server$(async function ({ offset }: GetManyParams) {
-  return procedures(this).posts.query.getMany({ offset })
+  return procedures(this).posts.query.getMany({ offset, noReplies: true })
 })
 
 export default component$(() => {

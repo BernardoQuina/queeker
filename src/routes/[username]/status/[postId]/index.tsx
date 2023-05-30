@@ -14,6 +14,7 @@ import { useAuthSession } from '../../../plugin@auth'
 import Button from '../../../../components/global/Button'
 import { procedures } from '../../../../procedures'
 import type { LikeInput } from '../../../../procedures/likes'
+import ReplyForm from '../../../../components/pages/post/ReplyForm'
 
 export const usePost = routeLoader$(async (req) => {
   return procedures(req).posts.query.getById({ id: parseInt(req.params.postId) })
@@ -50,13 +51,26 @@ export default component$(() => {
               {formatDate(post.createdAt)}
             </span>
             <div class="flex border-t-[1px] py-3 text-sm">
-              {/* Only updates the dom when I change the likeCount if I parse to int (why???) */}
-              <span class="font-semibold">{parseInt(post.likeCount)}</span>
-              <span class="ml-1 text-stone-500 dark:text-gray-400">
-                {parseInt(post.likeCount) === 1 ? 'Like' : 'Likes'}
-              </span>
+              <div>
+                {/* Only updates the dom when I change the likeCount if I parse to int (why???) */}
+                <span class="font-semibold">{parseInt(post.likeCount)}</span>
+                <span class="ml-1 text-stone-500 dark:text-gray-400">
+                  {parseInt(post.likeCount) === 1 ? 'Like' : 'Likes'}
+                </span>
+              </div>
+              <div class="ml-5">
+                {/* Only updates the dom when I change the likeCount if I parse to int (why???) */}
+                <span class="font-semibold">{parseInt(post.replyCount)}</span>
+                <span class="ml-1 text-stone-500 dark:text-gray-400">
+                  {parseInt(post.replyCount) === 1 ? 'Reply' : 'Replies'}
+                </span>
+              </div>
             </div>
-            <div class="flex border-t-[1px] pt-3">
+            <div
+              class={`flex border-t-[1px] ${
+                session.value?.user ? 'py-[0.375rem]' : '-mb-[0.375rem] pt-[0.375rem]'
+              } `}
+            >
               <Button
                 variant="ghost"
                 aria-label="Like"
@@ -100,6 +114,7 @@ export default component$(() => {
                 {post.userLiked ? <HiHeartSolid /> : <HiHeartOutline class="stroke-2" />}
               </Button>
             </div>
+            <ReplyForm user={session.value?.user} postId={post.id} />
           </section>
         </>
       )}

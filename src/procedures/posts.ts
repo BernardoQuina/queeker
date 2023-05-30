@@ -1,5 +1,5 @@
 import { type RequestEventBase, type RequestEventLoader, z } from '@builder.io/qwik-city'
-import { sql, desc, eq } from 'drizzle-orm'
+import { sql, desc, eq, and, isNull } from 'drizzle-orm'
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
 
@@ -10,6 +10,7 @@ import { getIdFromToken } from '../utils/getIdFromToken'
 const getManyParams = z.object({
   offset: z.number().optional(),
   userId: z.number().optional(),
+  noReplies: z.boolean().optional(),
 })
 
 export type GetManyParams = z.infer<typeof getManyParams>
@@ -22,6 +23,7 @@ export type GetByIdParams = z.infer<typeof getByIdParams>
 
 const addPostInput = z.object({
   content: z.string(),
+  replyToPostId: z.number().optional(),
 })
 
 export type AddPostInput = z.infer<typeof addPostInput>
@@ -32,7 +34,7 @@ export const postsProcedures = ({
 }: RequestEventLoader | RequestEventBase) => {
   return {
     query: {
-      getMany: async ({ offset, userId }: GetManyParams) => {
+      getMany: async ({ offset, userId, noReplies }: GetManyParams) => {
         try {
           // Get user id from session token
           const sessionUserId = await getIdFromToken({ cookie, env })
@@ -40,7 +42,10 @@ export const postsProcedures = ({
           const db = getDb({ env })
 
           const queryPosts = await db.query.posts.findMany({
-            where: userId ? eq(posts.userId, userId) : undefined,
+            where: and(
+              userId ? eq(posts.userId, userId) : undefined,
+              noReplies ? isNull(posts.replyToPostId) : undefined
+            ),
             with: { author: true },
             extras: {
               likeCount:
@@ -84,7 +89,7 @@ export const postsProcedures = ({
 
           const post = await db.query.posts.findFirst({
             where: eq(posts.id, id),
-            with: { author: true, likes: { columns: {} } },
+            with: { author: true },
             extras: {
               likeCount:
                 sql<string>`(SELECT COUNT(${likes.id.name}) FROM ${likes} WHERE likes.post_id = ${posts.id})`.as(
@@ -117,7 +122,7 @@ export const postsProcedures = ({
       },
     },
     mutation: {
-      add: async (post: AddPostInput) => {
+      add: async ({ content, replyToPostId }: AddPostInput) => {
         try {
           // Get id from session
           const userId = await getIdFromToken({ cookie, env })
@@ -145,11 +150,11 @@ export const postsProcedures = ({
           // Insert and return new post
           const newPostQuery = await db
             .insert(posts)
-            .values({ content: post.content, userId: user.id })
+            .values({ content, userId: user.id, replyToPostId })
 
           const newPost = await db.query.posts.findFirst({
             where: eq(posts.id, parseInt(newPostQuery.insertId)),
-            with: { author: true, likes: { columns: {} } },
+            with: { author: true },
             extras: {
               likeCount: sql<string>`0`.as('like_count'),
               userLiked: sql<0>`0`.as('user_liked'),
