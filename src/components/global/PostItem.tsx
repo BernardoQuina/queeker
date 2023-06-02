@@ -7,11 +7,11 @@ import {
   HiChatBubbleOvalLeftOutline,
 } from '@qwikest/icons/heroicons'
 
-import { type PostWithUserCounts } from '../../db/schema'
 import { timeAgo } from '../../utils/dates'
 import { useAuthSession } from '../../routes/plugin@auth'
 import { procedures } from '../../procedures'
 import type { LikeInput } from '../../procedures/likes'
+import type { GetManyPosts } from '../../procedures/posts'
 import Button from './Button'
 
 const likePost = server$(async function ({ postId, action }: LikeInput) {
@@ -19,7 +19,7 @@ const likePost = server$(async function ({ postId, action }: LikeInput) {
 })
 
 interface Props {
-  post: PostWithUserCounts
+  post: GetManyPosts[0]
 }
 
 export default component$(({ post }: Props) => {
