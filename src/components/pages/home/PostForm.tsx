@@ -4,19 +4,18 @@ import { Image } from '@unpic/qwik'
 import type { DefaultSession } from '@auth/core/types'
 import { useCSSTransition } from 'qwik-transition'
 
-import { type PostWithUserCounts } from '../../../db/schema'
 import Button from '../../global/Button'
 import Spinner from '../../global/Spinner'
 import Toast from '../../global/Toast'
 import { procedures } from '../../../procedures'
-import type { AddPostInput } from '../../../procedures/posts'
+import type { AddPostInput, GetManyPosts } from '../../../procedures/posts'
 
 const addPost = server$(async function ({ content }: AddPostInput) {
   return procedures(this).posts.mutation.add({ content })
 })
 
 interface Props {
-  posts: PostWithUserCounts[]
+  posts: GetManyPosts
   user: DefaultSession['user']
 }
 
