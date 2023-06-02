@@ -1,4 +1,4 @@
-import { component$, useSignal, useStore } from '@builder.io/qwik'
+import { component$, useSignal, useStore, useVisibleTask$ } from '@builder.io/qwik'
 import {
   type DocumentHead,
   routeLoader$,
@@ -19,6 +19,9 @@ import Button from '../../../../components/global/Button'
 import { procedures } from '../../../../procedures'
 import type { LikeInput } from '../../../../procedures/likes'
 import ReplyForm from '../../../../components/pages/post/ReplyForm'
+import type { GetManyPosts, GetManyPostsParams } from '../../../../procedures/posts'
+import PostItem from '../../../../components/global/PostItem'
+import Spinner from '../../../../components/global/Spinner'
 
 export const usePost = routeLoader$(async (req) => {
   return procedures(req).posts.query.getById({ id: parseInt(req.params.postId) })
@@ -28,16 +31,89 @@ const likePost = server$(async function ({ postId, action }: LikeInput) {
   return procedures(this).likes.mutation.like({ postId, action })
 })
 
+const getReplies = server$(async function ({
+  replyToPostId,
+  offset,
+}: GetManyPostsParams) {
+  return procedures(this).posts.query.getMany({ replyToPostId, offset })
+})
+
 export default component$(() => {
   const postSignal = usePost()
 
-  const post = useStore(postSignal.value.data?.post ?? { notFound: true })
+  const post = useStore(postSignal.value.data ?? { notFound: true })
 
   const location = useLocation()
 
   const session = useAuthSession()
 
   const textareaRef = useSignal<HTMLTextAreaElement>()
+
+  const replies = useStore<GetManyPosts>([])
+  const loadingReplies = useSignal(true)
+  const repliesErrorMessage = useSignal('')
+
+  useVisibleTask$(async ({ cleanup }) => {
+    if ('notFound' in post || postSignal.value.code !== 200) return
+
+    // Get latest replies
+    const latestReplies = await getReplies({ replyToPostId: post.id, offset: 0 })
+
+    if (latestReplies.code !== 200 || !latestReplies.data) {
+      loadingReplies.value = false
+
+      repliesErrorMessage.value = latestReplies.message
+
+      return
+    }
+
+    loadingReplies.value = false
+
+    replies.push(...latestReplies.data)
+
+    // Get more replies when near bottom
+    const nearBottom = async () => {
+      if (replies.length < 25) {
+        window.removeEventListener('scroll', nearBottom)
+
+        loadingReplies.value = false
+        return
+      }
+
+      if (
+        window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 &&
+        !loadingReplies.value
+      ) {
+        loadingReplies.value = true
+
+        const newReplies = await getReplies({
+          replyToPostId: post.id,
+          offset: replies.length,
+        })
+
+        if (newReplies.code !== 200 || !newReplies.data) {
+          loadingReplies.value = false
+          return
+        }
+
+        if (newReplies?.data?.length === 0) {
+          window.removeEventListener('scroll', nearBottom)
+
+          loadingReplies.value = false
+          return
+        }
+
+        replies.push(...newReplies.data)
+
+        // small timeout to prevent multiple requests
+        setTimeout(() => (loadingReplies.value = false), 500)
+      }
+    }
+
+    window.addEventListener('scroll', nearBottom)
+
+    cleanup(() => window.removeEventListener('scroll', nearBottom))
+  })
 
   return (
     <div class="w-[600px] max-w-full flex-grow self-center border-l-[1px] border-r-[1px]">
@@ -129,10 +205,26 @@ export default component$(() => {
               </Button>
             </div>
             <ReplyForm
+              replies={replies}
               user={session.value?.user}
-              postId={post.id}
+              post={post}
               textareaRef={textareaRef}
             />
+          </section>
+          <section class="flex flex-col pb-32">
+            {repliesErrorMessage.value ? (
+              <ErrorMessage message={repliesErrorMessage.value} />
+            ) : (
+              replies.map((reply) => <PostItem key={post.id} post={reply} />)
+            )}
+
+            {loadingReplies.value ? (
+              <div class="mt-14">
+                <Spinner />
+              </div>
+            ) : (
+              <div class="mt-14 h-2 w-2 self-center rounded-full bg-stone-200 dark:bg-slate-600" />
+            )}
           </section>
         </>
       )}
@@ -156,11 +248,11 @@ export const head: DocumentHead = ({ resolveValue }) => {
   }
 
   return {
-    title: `${post.data?.post.author?.displayName} on Queeker: "${post.data?.post.content}"`,
+    title: `${post.data?.author?.displayName} on Queeker: "${post.data?.content}"`,
     meta: [
       {
         name: 'description',
-        content: `${post.data?.post.author?.displayName} on Queeker: "${post.data?.post.content}"`,
+        content: `${post.data?.author?.displayName} on Queeker: "${post.data?.content}"`,
       },
     ],
   }

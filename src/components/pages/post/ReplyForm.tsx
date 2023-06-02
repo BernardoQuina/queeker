@@ -1,4 +1,4 @@
-import { $, Signal, component$, useSignal, useVisibleTask$ } from '@builder.io/qwik'
+import { type Signal, $, component$, useSignal, useVisibleTask$ } from '@builder.io/qwik'
 import { server$ } from '@builder.io/qwik-city'
 import { Image } from '@unpic/qwik'
 import type { DefaultSession } from '@auth/core/types'
@@ -9,20 +9,20 @@ import Button from '../../global/Button'
 import Spinner from '../../global/Spinner'
 import Toast from '../../global/Toast'
 import { procedures } from '../../../procedures'
-import type { AddPostInput } from '../../../procedures/posts'
+import type { AddPostInput, GetManyPosts, GetPostById } from '../../../procedures/posts'
 
 const replyToPost = server$(async function ({ content, replyToPostId }: AddPostInput) {
   return procedures(this).posts.mutation.add({ content, replyToPostId })
 })
 
 interface Props {
-  // posts: PostWithUserAndLikeCount[]
+  replies: GetManyPosts
   user?: DefaultSession['user']
-  postId: number
+  post: GetPostById
   textareaRef: Signal<HTMLTextAreaElement | undefined>
 }
 
-export default component$(({ user, postId, textareaRef }: Props) => {
+export default component$(({ replies, user, post, textareaRef }: Props) => {
   const content = useSignal('')
   const loading = useSignal(false)
 
@@ -54,7 +54,7 @@ export default component$(({ user, postId, textareaRef }: Props) => {
 
         const newPost = await replyToPost({
           content: content.value,
-          replyToPostId: postId,
+          replyToPostId: post.id,
         })
 
         if (newPost.code !== 200 || !newPost.data) {
@@ -70,10 +70,11 @@ export default component$(({ user, postId, textareaRef }: Props) => {
 
         content.value = ''
 
-        // posts.unshift(newPost.data)
+        post.replyCount = (parseInt(post.replyCount) + 1).toString()
+        replies.unshift(newPost.data)
       }}
       preventdefault:submit
-      class="flex border-t-[1px] px-3"
+      class="flex border-t-[1px]"
     >
       <Image
         src={user.image ?? ''}

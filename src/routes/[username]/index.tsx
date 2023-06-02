@@ -11,7 +11,7 @@ import PostItem from '../../components/global/PostItem'
 import ErrorMessage from '../../components/global/ErrorMessage'
 import Spinner from '../../components/global/Spinner'
 import { procedures } from '../../procedures'
-import type { GetManyParams } from '../../procedures/posts'
+import type { GetManyPostsParams } from '../../procedures/posts'
 
 export const useUserPosts = routeLoader$(async (req) => {
   const userRes = await procedures(req).users.query.getByUsername({
@@ -36,7 +36,7 @@ export const useUserPosts = routeLoader$(async (req) => {
   return { code: 200, message: 'success', data: { user, posts: posts.data } }
 })
 
-const getMorePosts = server$(async function ({ offset, userId }: GetManyParams) {
+const getMorePosts = server$(async function ({ offset, userId }: GetManyPostsParams) {
   return procedures(this).posts.query.getMany({ offset, userId, noReplies: true })
 })
 

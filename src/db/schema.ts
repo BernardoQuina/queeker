@@ -55,16 +55,10 @@ export const likesRelations = relations(likes, ({ one }) => ({
   post: one(posts, { fields: [likes.postId], references: [posts.id] }),
 }))
 
-//
+// ------------
 // Types
-//
+// ------------
 
 export type User = InferModel<typeof users>
 export type Post = InferModel<typeof posts>
 export type Like = InferModel<typeof likes>
-
-export type PostWithUserCounts = Post & { author: User | null } & {
-  likeCount: string
-  replyCount: string
-  userLiked: 1 | 0
-}

@@ -6,35 +6,57 @@ import { Redis } from '@upstash/redis'
 import { getDb } from '../db/db'
 import { likes, posts, users } from '../db/schema'
 import { getIdFromToken } from '../utils/getIdFromToken'
+import type { ResolvedType } from '../utils/tsHelpers'
+
+// ---------
+// Parameters
+// ---------
 
 const getManyParams = z.object({
   offset: z.number().optional(),
   userId: z.number().optional(),
+  replyToPostId: z.number().optional(),
   noReplies: z.boolean().optional(),
 })
-
-export type GetManyParams = z.infer<typeof getManyParams>
+export type GetManyPostsParams = z.infer<typeof getManyParams>
 
 const getByIdParams = z.object({
   id: z.number(),
 })
+export type GetPostByIdParams = z.infer<typeof getByIdParams>
 
-export type GetByIdParams = z.infer<typeof getByIdParams>
+// ------------
+// Inputs
+// ------------
 
 const addPostInput = z.object({
   content: z.string(),
   replyToPostId: z.number().optional(),
 })
-
 export type AddPostInput = z.infer<typeof addPostInput>
+
+// ------------
+// Procedures
+// ------------
 
 export const postsProcedures = ({
   cookie,
   env,
 }: RequestEventLoader | RequestEventBase) => {
   return {
+    // ------------
+    // Queries
+    // ------------
     query: {
-      getMany: async ({ offset, userId, noReplies }: GetManyParams) => {
+      // ------------
+      // Get many posts
+      // ------------
+      getMany: async ({
+        offset,
+        userId,
+        noReplies,
+        replyToPostId,
+      }: GetManyPostsParams) => {
         try {
           // Get user id from session token
           const sessionUserId = await getIdFromToken({ cookie, env })
@@ -44,7 +66,8 @@ export const postsProcedures = ({
           const queryPosts = await db.query.posts.findMany({
             where: and(
               userId ? eq(posts.userId, userId) : undefined,
-              noReplies ? isNull(posts.replyToPostId) : undefined
+              noReplies ? isNull(posts.replyToPostId) : undefined,
+              replyToPostId ? eq(posts.replyToPostId, replyToPostId) : undefined
             ),
             with: { author: true },
             extras: {
@@ -78,7 +101,10 @@ export const postsProcedures = ({
           return { code: 500, message, data: null }
         }
       },
-      getById: async ({ id }: GetByIdParams) => {
+      // ------------
+      // Get post by id
+      // ------------
+      getById: async ({ id }: GetPostByIdParams) => {
         try {
           // Get user id from session token
           const userId = await getIdFromToken({ cookie, env })
@@ -111,7 +137,7 @@ export const postsProcedures = ({
 
           if (!post) return { code: 404, message: 'Qweek not found', data: null }
 
-          return { code: 200, message: 'success', data: { post } }
+          return { code: 200, message: 'success', data: post }
         } catch (error) {
           let message = 'Oops, something went wrong. Please try again later.'
 
@@ -121,7 +147,13 @@ export const postsProcedures = ({
         }
       },
     },
+    // ------------
+    // Mutations
+    // ------------
     mutation: {
+      // ------------
+      // Add post
+      // ------------
       add: async ({ content, replyToPostId }: AddPostInput) => {
         try {
           // Get id from session
@@ -174,3 +206,20 @@ export const postsProcedures = ({
     },
   }
 }
+
+// ------------
+// Return types
+// ------------
+
+// Get many posts
+type GetManyPostsPromise = ReturnType<
+  ReturnType<typeof postsProcedures>['query']['getMany']
+>
+export type GetManyPosts = Exclude<ResolvedType<GetManyPostsPromise>['data'], null>
+
+// Get post by id
+type GetPostByIdPromise = ReturnType<
+  ReturnType<typeof postsProcedures>['query']['getById']
+>
+
+export type GetPostById = Exclude<ResolvedType<GetPostByIdPromise>['data'], null>
