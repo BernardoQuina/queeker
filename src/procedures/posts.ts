@@ -49,11 +49,11 @@ export const postsProcedures = ({
             with: { author: true },
             extras: {
               likeCount:
-                sql<string>`(SELECT COUNT(${likes.id.name}) FROM ${likes} WHERE likes.post_id = ${posts.id})`.as(
+                sql<string>`(SELECT COUNT(*) FROM ${likes} WHERE likes.post_id = ${posts.id})`.as(
                   'like_count'
                 ),
               replyCount:
-                sql<string>`(SELECT COUNT(${posts.id}) FROM ${posts} WHERE posts.reply_to_post_id = ${posts.id})`.as(
+                sql<string>`(SELECT COUNT(*) FROM ${posts} r WHERE r.reply_to_post_id = ${posts.id})`.as(
                   'reply_count'
                 ),
               userLiked: sessionUserId
@@ -92,17 +92,17 @@ export const postsProcedures = ({
             with: { author: true },
             extras: {
               likeCount:
-                sql<string>`(SELECT COUNT(${likes.id.name}) FROM ${likes} WHERE likes.post_id = ${posts.id})`.as(
+                sql<string>`(SELECT COUNT(*) FROM ${likes} WHERE likes.post_id = ${id})`.as(
                   'like_count'
                 ),
               replyCount:
-                sql<string>`(SELECT COUNT(${posts.id}) FROM ${posts} WHERE posts.reply_to_post_id = ${posts.id})`.as(
+                sql<string>`(SELECT COUNT(*) FROM ${posts} WHERE posts.reply_to_post_id = ${id})`.as(
                   'reply_count'
                 ),
               userLiked: userId
                 ? sql<
                     0 | 1
-                  >`EXISTS (SELECT 1 FROM ${likes} WHERE likes.post_id = ${posts.id} AND likes.user_id = ${userId})`.as(
+                  >`EXISTS (SELECT 1 FROM ${likes} WHERE likes.post_id = ${id} AND likes.user_id = ${userId})`.as(
                     'user_liked'
                   )
                 : sql<0 | 1>`0`.as('user_liked'),
@@ -157,6 +157,7 @@ export const postsProcedures = ({
             with: { author: true },
             extras: {
               likeCount: sql<string>`0`.as('like_count'),
+              replyCount: sql<string>`0`.as('reply_count'),
               userLiked: sql<0>`0`.as('user_liked'),
             },
           })

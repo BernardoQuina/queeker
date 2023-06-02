@@ -1,4 +1,4 @@
-import { $, component$, useSignal, useVisibleTask$ } from '@builder.io/qwik'
+import { $, Signal, component$, useSignal, useVisibleTask$ } from '@builder.io/qwik'
 import { server$ } from '@builder.io/qwik-city'
 import { Image } from '@unpic/qwik'
 import type { DefaultSession } from '@auth/core/types'
@@ -19,9 +19,10 @@ interface Props {
   // posts: PostWithUserAndLikeCount[]
   user?: DefaultSession['user']
   postId: number
+  textareaRef: Signal<HTMLTextAreaElement | undefined>
 }
 
-export default component$(({ user, postId }: Props) => {
+export default component$(({ user, postId, textareaRef }: Props) => {
   const content = useSignal('')
   const loading = useSignal(false)
 
@@ -30,8 +31,6 @@ export default component$(({ user, postId }: Props) => {
 
   // enterFrom animation wasn't working w/ shouldMount and transitionOnAppear so that was left out
   const { stage } = useCSSTransition(toastVisible, { timeout: 300 })
-
-  const textareaRef = useSignal<HTMLTextAreaElement>()
 
   useVisibleTask$(({ cleanup }) => {
     const setHeight = () => {

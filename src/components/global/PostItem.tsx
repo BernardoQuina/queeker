@@ -1,9 +1,13 @@
 import { component$ } from '@builder.io/qwik'
-import { server$ } from '@builder.io/qwik-city'
+import { server$, useNavigate } from '@builder.io/qwik-city'
 import { Image } from '@unpic/qwik'
-import { HiHeartOutline, HiHeartSolid } from '@qwikest/icons/heroicons'
+import {
+  HiHeartOutline,
+  HiHeartSolid,
+  HiChatBubbleOvalLeftOutline,
+} from '@qwikest/icons/heroicons'
 
-import { type PostWithUserAndLikeCount } from '../../db/schema'
+import { type PostWithUserCounts } from '../../db/schema'
 import { timeAgo } from '../../utils/dates'
 import { useAuthSession } from '../../routes/plugin@auth'
 import { procedures } from '../../procedures'
@@ -15,11 +19,13 @@ const likePost = server$(async function ({ postId, action }: LikeInput) {
 })
 
 interface Props {
-  post: PostWithUserAndLikeCount
+  post: PostWithUserCounts
 }
 
 export default component$(({ post }: Props) => {
   const session = useAuthSession()
+
+  const nav = useNavigate()
 
   return (
     <article class="relative flex border-b-[1px] bg-white hover:bg-stone-50 dark:bg-blue-1100 dark:hover:bg-blue-1000">
@@ -128,6 +134,23 @@ export default component$(({ post }: Props) => {
           } group-hover:text-pink-500 group-hover:dark:text-pink-600`}
         >
           {post.likeCount}
+        </span>
+      </div>
+      <div
+        class="group absolute bottom-[0.4rem] left-[8rem] flex cursor-pointer items-center"
+        onClick$={async () => nav(`/${post.author?.username}/status/${post.id}`)}
+      >
+        <Button
+          variant="ghost"
+          aria-label="Like"
+          class={`pointer-events-none h-8 w-8 items-center justify-center text-xl text-stone-500 group-hover:bg-blue-550 group-hover:bg-opacity-[0.15] group-hover:text-blue-550 dark:text-gray-400 group-hover:dark:text-blue-550`}
+        >
+          <HiChatBubbleOvalLeftOutline class="stroke-2" />
+        </Button>
+        <span
+          class={`pl-1 pr-3 text-sm text-stone-500 group-hover:text-blue-550 dark:text-gray-400 group-hover:dark:text-blue-550`}
+        >
+          {post.replyCount}
         </span>
       </div>
     </article>

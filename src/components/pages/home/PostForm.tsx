@@ -4,7 +4,7 @@ import { Image } from '@unpic/qwik'
 import type { DefaultSession } from '@auth/core/types'
 import { useCSSTransition } from 'qwik-transition'
 
-import { type PostWithUserAndLikeCount } from '../../../db/schema'
+import { type PostWithUserCounts } from '../../../db/schema'
 import Button from '../../global/Button'
 import Spinner from '../../global/Spinner'
 import Toast from '../../global/Toast'
@@ -16,7 +16,7 @@ const addPost = server$(async function ({ content }: AddPostInput) {
 })
 
 interface Props {
-  posts: PostWithUserAndLikeCount[]
+  posts: PostWithUserCounts[]
   user: DefaultSession['user']
 }
 

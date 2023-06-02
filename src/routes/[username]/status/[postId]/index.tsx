@@ -1,11 +1,15 @@
-import { component$, useStore } from '@builder.io/qwik'
+import { component$, useSignal, useStore } from '@builder.io/qwik'
 import {
   type DocumentHead,
   routeLoader$,
   useLocation,
   server$,
 } from '@builder.io/qwik-city'
-import { HiHeartOutline, HiHeartSolid } from '@qwikest/icons/heroicons'
+import {
+  HiChatBubbleOvalLeftOutline,
+  HiHeartOutline,
+  HiHeartSolid,
+} from '@qwikest/icons/heroicons'
 
 import ErrorMessage from '../../../../components/global/ErrorMessage'
 import Header from '../../../../components/pages/post/Header'
@@ -32,6 +36,8 @@ export default component$(() => {
   const location = useLocation()
 
   const session = useAuthSession()
+
+  const textareaRef = useSignal<HTMLTextAreaElement>()
 
   return (
     <div class="w-[600px] max-w-full flex-grow self-center border-l-[1px] border-r-[1px]">
@@ -113,8 +119,20 @@ export default component$(() => {
               >
                 {post.userLiked ? <HiHeartSolid /> : <HiHeartOutline class="stroke-2" />}
               </Button>
+              <Button
+                variant="ghost"
+                aria-label="Like"
+                class="ml-5 h-8 w-8 items-center justify-center text-xl text-stone-500 hover:bg-pink-500 hover:bg-opacity-[0.15] hover:text-blue-550 dark:text-gray-400 hover:dark:bg-blue-550 hover:dark:text-blue-550"
+                onClick$={async () => textareaRef.value?.focus()}
+              >
+                <HiChatBubbleOvalLeftOutline class="stroke-2" />
+              </Button>
             </div>
-            <ReplyForm user={session.value?.user} postId={post.id} />
+            <ReplyForm
+              user={session.value?.user}
+              postId={post.id}
+              textareaRef={textareaRef}
+            />
           </section>
         </>
       )}
