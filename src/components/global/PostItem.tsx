@@ -20,18 +20,23 @@ const likePost = server$(async function ({ postId, action }: LikeInput) {
 
 interface Props {
   post: GetManyPosts[0]
+  isInReplyTree?: boolean
 }
 
-export default component$(({ post }: Props) => {
+export default component$(({ post, isInReplyTree }: Props) => {
   const session = useAuthSession()
 
   const nav = useNavigate()
 
   return (
-    <article class="relative flex border-b-[1px] bg-white hover:bg-stone-50 dark:bg-blue-1100 dark:hover:bg-blue-1000">
+    <article
+      class={`relative flex ${
+        !isInReplyTree && 'border-b-[1px]'
+      } bg-white hover:bg-stone-50 dark:bg-blue-1100 dark:hover:bg-blue-1000`}
+    >
       {/* using a tag instead of Link because it was causing an error and also, */}
       {/* the docs says their internal testing found that using the <a> tag is snappier  */}
-      <a href={`/${post.author?.username}`} class="absolute left-3 top-3">
+      <a href={`/${post.author?.username}`} class="absolute left-3 top-3 z-[2]">
         <Image
           src={post.author?.image ?? ''}
           alt="user avatar"
@@ -41,6 +46,9 @@ export default component$(({ post }: Props) => {
           class="z-0 rounded-full"
         />
       </a>
+      {isInReplyTree && (
+        <div class="absolute left-9 top-3 z-[1] h-full w-[2px] bg-stone-200 dark:bg-slate-600" />
+      )}
       <a
         href={`/${post.author?.username}`}
         class="absolute left-[4.75rem] top-3 z-[1] flex w-[calc(100%-72px)]"

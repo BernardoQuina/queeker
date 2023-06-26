@@ -12,7 +12,7 @@ import {
 } from '@qwikest/icons/heroicons'
 
 import ErrorMessage from '../../../../components/global/ErrorMessage'
-import Header from '../../../../components/pages/post/Header'
+import PostHeader from '../../../../components/pages/post/PostHeader'
 import { formatDate } from '../../../../utils/dates'
 import { useAuthSession } from '../../../plugin@auth'
 import Button from '../../../../components/global/Button'
@@ -22,6 +22,8 @@ import ReplyForm from '../../../../components/pages/post/ReplyForm'
 import type { GetManyPosts, GetManyPostsParams } from '../../../../procedures/posts'
 import PostItem from '../../../../components/global/PostItem'
 import Spinner from '../../../../components/global/Spinner'
+import ParentPost from '../../../../components/pages/post/ParentPost'
+import PageHeader from '../../../../components/pages/post/PageHeader'
 
 export const usePost = routeLoader$(async (req) => {
   return procedures(req).posts.query.getById({ id: parseInt(req.params.postId) })
@@ -117,16 +119,20 @@ export default component$(() => {
 
   return (
     <div class="w-[600px] max-w-full flex-grow self-center border-l-[1px] border-r-[1px]">
+      <PageHeader />
       {'notFound' in post || postSignal.value.code !== 200 ? (
-        <ErrorMessage
-          message={postSignal.value.message}
-          retryHref={location.url.pathname}
-        />
+        <div class="mt-[5rem]">
+          <ErrorMessage
+            message={postSignal.value.message}
+            retryHref={location.url.pathname}
+          />
+        </div>
       ) : (
-        <>
-          <Header user={post.author} />
+        <div class="mt-[4.2rem]">
+          {post.parentPost && <ParentPost parentPost={post.parentPost} />}
+          <PostHeader user={post.author} />
           <section class="border-b-[1px] px-3 pb-3">
-            <p class="mb-2 w-full whitespace-pre-wrap break-words text-2xl">
+            <p class="mb-2 w-full whitespace-pre-wrap break-words text-xl">
               {post.content}
             </p>
             <span class="inline-block pb-3 text-stone-500 dark:text-gray-400">
@@ -226,7 +232,7 @@ export default component$(() => {
               <div class="mt-14 h-2 w-2 self-center rounded-full bg-stone-200 dark:bg-slate-600" />
             )}
           </section>
-        </>
+        </div>
       )}
     </div>
   )

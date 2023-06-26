@@ -113,31 +113,57 @@ export const postsProcedures = ({
 
           if (isNaN(id)) return { code: 400, message: 'Invalid post id', data: null }
 
-          const post = await db.query.posts.findFirst({
-            where: eq(posts.id, id),
-            with: { author: true },
-            extras: {
-              likeCount:
-                sql<string>`(SELECT COUNT(*) FROM ${likes} WHERE likes.post_id = ${id})`.as(
-                  'like_count'
-                ),
-              replyCount:
-                sql<string>`(SELECT COUNT(*) FROM ${posts} WHERE posts.reply_to_post_id = ${id})`.as(
-                  'reply_count'
-                ),
-              userLiked: userId
-                ? sql<
-                    0 | 1
-                  >`EXISTS (SELECT 1 FROM ${likes} WHERE likes.post_id = ${id} AND likes.user_id = ${userId})`.as(
-                    'user_liked'
-                  )
-                : sql<0 | 1>`0`.as('user_liked'),
-            },
-          })
+          const getPostFromDb = (id: number) => {
+            return db.query.posts.findFirst({
+              where: eq(posts.id, id),
+              with: { author: true },
+              extras: {
+                likeCount:
+                  sql<string>`(SELECT COUNT(*) FROM ${likes} WHERE likes.post_id = ${id})`.as(
+                    'like_count'
+                  ),
+                replyCount:
+                  sql<string>`(SELECT COUNT(*) FROM ${posts} WHERE posts.reply_to_post_id = ${id})`.as(
+                    'reply_count'
+                  ),
+                userLiked: userId
+                  ? sql<
+                      0 | 1
+                    >`EXISTS (SELECT 1 FROM ${likes} WHERE likes.post_id = ${id} AND likes.user_id = ${userId})`.as(
+                      'user_liked'
+                    )
+                  : sql<0 | 1>`0`.as('user_liked'),
+              },
+            })
+          }
+
+          const post = await getPostFromDb(id)
 
           if (!post) return { code: 404, message: 'Qweek not found', data: null }
 
-          return { code: 200, message: 'success', data: post }
+          // Get parent posts recursively to build reply tree
+          type PostWithParents = typeof post & { parentPost: PostWithParents | null }
+
+          const addParentPost = async (post: PostWithParents) => {
+            if (post.replyToPostId) {
+              const parentPost = await getPostFromDb(post.replyToPostId)
+
+              if (parentPost) {
+                const parentPostWithParents = await addParentPost({
+                  ...parentPost,
+                  parentPost: null,
+                })
+
+                post.parentPost = parentPostWithParents
+              }
+            }
+
+            return post
+          }
+
+          const postWithParents = await addParentPost({ ...post, parentPost: null })
+
+          return { code: 200, message: 'success', data: postWithParents }
         } catch (error) {
           let message = 'Oops, something went wrong. Please try again later.'
 
