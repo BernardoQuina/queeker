@@ -36,13 +36,10 @@ const addPostInput = z.object({
 export type AddPostInput = z.infer<typeof addPostInput>
 
 // ------------
-// Procedures
+// Posts API
 // ------------
 
-export const postsProcedures = ({
-  cookie,
-  env,
-}: RequestEventLoader | RequestEventBase) => {
+export const postsApi = ({ cookie, env }: RequestEventLoader | RequestEventBase) => {
   return {
     // ------------
     // Queries
@@ -238,14 +235,9 @@ export const postsProcedures = ({
 // ------------
 
 // Get many posts
-type GetManyPostsPromise = ReturnType<
-  ReturnType<typeof postsProcedures>['query']['getMany']
->
+type GetManyPostsPromise = ReturnType<ReturnType<typeof postsApi>['query']['getMany']>
 export type GetManyPosts = Exclude<ResolvedType<GetManyPostsPromise>['data'], null>
 
 // Get post by id
-type GetPostByIdPromise = ReturnType<
-  ReturnType<typeof postsProcedures>['query']['getById']
->
-
+type GetPostByIdPromise = ReturnType<ReturnType<typeof postsApi>['query']['getById']>
 export type GetPostById = Exclude<ResolvedType<GetPostByIdPromise>['data'], null>

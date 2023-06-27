@@ -18,7 +18,7 @@ const createInput = z.object({
 
 type CreateInput = z.infer<typeof createInput>
 
-export const usersProcedures = ({ env }: RequestEventLoader | RequestEventBase) => {
+export const usersApi = ({ env }: RequestEventLoader | RequestEventBase) => {
   return {
     query: {
       getByUsername: async ({ username }: GetByIdParams) => {

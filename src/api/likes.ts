@@ -14,10 +14,7 @@ const likeInput = z.object({
 
 export type LikeInput = z.infer<typeof likeInput>
 
-export const likesProcedures = ({
-  env,
-  cookie,
-}: RequestEventLoader | RequestEventBase) => {
+export const likesApi = ({ env, cookie }: RequestEventLoader | RequestEventBase) => {
   return {
     mutation: {
       like: async ({ postId, action }: LikeInput) => {
