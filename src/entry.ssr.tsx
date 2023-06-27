@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * WHAT IS THIS FILE?
  *
@@ -13,6 +14,8 @@
 import { renderToStream, type RenderToStreamOptions } from '@builder.io/qwik/server'
 // eslint-disable-next-line import/no-unresolved
 import { manifest } from '@qwik-client-manifest'
+import { isDev } from '@builder.io/qwik/build'
+
 import Root from './root'
 
 export default function (opts: RenderToStreamOptions) {
@@ -25,4 +28,21 @@ export default function (opts: RenderToStreamOptions) {
       ...opts.containerAttributes,
     },
   })
+}
+
+// Temporary workaround while the duplicate JSXNode warning is not fixed.
+// This warning bug happens with some packages such as @qwikest/icons.
+// Open issue at https://github.com/BuilderIO/qwik/issues/3883
+if (isDev) {
+  const consoleWarn = console.warn
+  const SUPPRESSED_WARNINGS = ['Duplicate implementations of "JSXNode" found']
+
+  console.warn = function filterWarnings(msg, ...args) {
+    if (
+      !SUPPRESSED_WARNINGS.some(
+        (entry) => msg.includes(entry) || args.some((arg) => arg.includes(entry))
+      )
+    )
+      consoleWarn(msg, ...args)
+  }
 }
