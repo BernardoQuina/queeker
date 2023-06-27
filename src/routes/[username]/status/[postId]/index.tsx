@@ -16,28 +16,28 @@ import PostHeader from '../../../../components/pages/post/PostHeader'
 import { formatDate } from '../../../../utils/dates'
 import { useAuthSession } from '../../../plugin@auth'
 import Button from '../../../../components/global/Button'
-import { procedures } from '../../../../procedures'
-import type { LikeInput } from '../../../../procedures/likes'
+import { api } from '../../../../api'
+import type { LikeInput } from '../../../../api/likes'
 import ReplyForm from '../../../../components/pages/post/ReplyForm'
-import type { GetManyPosts, GetManyPostsParams } from '../../../../procedures/posts'
+import type { GetManyPosts, GetManyPostsParams } from '../../../../api/posts'
 import PostItem from '../../../../components/global/PostItem'
 import Spinner from '../../../../components/global/Spinner'
 import ParentPost from '../../../../components/pages/post/ParentPost'
 import PageHeader from '../../../../components/pages/post/PageHeader'
 
 export const usePost = routeLoader$(async (req) => {
-  return procedures(req).posts.query.getById({ id: parseInt(req.params.postId) })
+  return api(req).posts.query.getById({ id: parseInt(req.params.postId) })
 })
 
 const likePost = server$(async function ({ postId, action }: LikeInput) {
-  return procedures(this).likes.mutation.like({ postId, action })
+  return api(this).likes.mutation.like({ postId, action })
 })
 
 const getReplies = server$(async function ({
   replyToPostId,
   offset,
 }: GetManyPostsParams) {
-  return procedures(this).posts.query.getMany({ replyToPostId, offset })
+  return api(this).posts.query.getMany({ replyToPostId, offset })
 })
 
 export default component$(() => {

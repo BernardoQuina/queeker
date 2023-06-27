@@ -6,16 +6,16 @@ import PostForm from '../components/pages/home/PostForm'
 import PostItem from '../components/global/PostItem'
 import ErrorMessage from '../components/global/ErrorMessage'
 import Spinner from '../components/global/Spinner'
-import { procedures } from '../procedures'
-import type { GetManyPostsParams } from '../procedures/posts'
+import { api } from '../api'
+import type { GetManyPostsParams } from '../api/posts'
 import { useAuthSession } from './plugin@auth'
 
 export const usePosts = routeLoader$(async (req) => {
-  return procedures(req).posts.query.getMany({ noReplies: true })
+  return api(req).posts.query.getMany({ noReplies: true })
 })
 
 const getMorePosts = server$(async function ({ offset }: GetManyPostsParams) {
-  return procedures(this).posts.query.getMany({ offset, noReplies: true })
+  return api(this).posts.query.getMany({ offset, noReplies: true })
 })
 
 export default component$(() => {

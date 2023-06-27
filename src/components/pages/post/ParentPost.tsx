@@ -1,5 +1,5 @@
 import { component$ } from '@builder.io/qwik'
-import type { GetPostById } from '../../../procedures/posts'
+import type { GetPostById } from '../../../api/posts'
 import PostItem from '../../global/PostItem'
 
 interface Props {

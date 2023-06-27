@@ -10,11 +10,11 @@ import Header from '../../components/pages/profile/Header'
 import PostItem from '../../components/global/PostItem'
 import ErrorMessage from '../../components/global/ErrorMessage'
 import Spinner from '../../components/global/Spinner'
-import { procedures } from '../../procedures'
-import type { GetManyPostsParams } from '../../procedures/posts'
+import { api } from '../../api'
+import type { GetManyPostsParams } from '../../api/posts'
 
 export const useUserPosts = routeLoader$(async (req) => {
-  const userRes = await procedures(req).users.query.getByUsername({
+  const userRes = await api(req).users.query.getByUsername({
     username: req.params.username,
   })
 
@@ -24,10 +24,7 @@ export const useUserPosts = routeLoader$(async (req) => {
 
   const user = userRes.data.user
 
-  const posts = await procedures(req).posts.query.getMany({
-    userId: user.id,
-    noReplies: true,
-  })
+  const posts = await api(req).posts.query.getMany({ userId: user.id, noReplies: true })
 
   if (posts.code !== 200 || !posts.data) {
     return { code: posts.code, message: posts.message, data: null }
@@ -37,7 +34,7 @@ export const useUserPosts = routeLoader$(async (req) => {
 })
 
 const getMorePosts = server$(async function ({ offset, userId }: GetManyPostsParams) {
-  return procedures(this).posts.query.getMany({ offset, userId, noReplies: true })
+  return api(this).posts.query.getMany({ offset, userId, noReplies: true })
 })
 
 export default component$(() => {

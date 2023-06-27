@@ -7,11 +7,11 @@ import { useCSSTransition } from 'qwik-transition'
 import Button from '../../global/Button'
 import Spinner from '../../global/Spinner'
 import Toast from '../../global/Toast'
-import { procedures } from '../../../procedures'
-import type { AddPostInput, GetManyPosts } from '../../../procedures/posts'
+import { api } from '../../../api'
+import type { AddPostInput, GetManyPosts } from '../../../api/posts'
 
 const addPost = server$(async function ({ content }: AddPostInput) {
-  return procedures(this).posts.mutation.add({ content })
+  return api(this).posts.mutation.add({ content })
 })
 
 interface Props {

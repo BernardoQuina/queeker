@@ -2,7 +2,7 @@ import { serverAuth$ } from '@builder.io/qwik-auth'
 import GitHub from '@auth/core/providers/github'
 import type { Provider } from '@auth/core/providers'
 
-import { procedures } from '../procedures'
+import { api } from '../api'
 
 export const { onRequest, useAuthSession, useAuthSignin, useAuthSignout } = serverAuth$(
   (req) => ({
@@ -13,14 +13,14 @@ export const { onRequest, useAuthSession, useAuthSignin, useAuthSignout } = serv
         clientId: req.env.get('GITHUB_ID') as string,
         clientSecret: req.env.get('GITHUB_SECRET') as string,
         profile: async (profile) => {
-          const userRes = await procedures(req).users.query.getByUsername({
+          const userRes = await api(req).users.query.getByUsername({
             username: profile.login.toLowerCase(),
           })
 
           let userId = userRes.data?.user.id
 
           if (!userRes.data?.user) {
-            const createUser = await procedures(req).users.mutations.create({
+            const createUser = await api(req).users.mutations.create({
               username: profile.login,
               displayName: profile.name,
               image: profile.avatar_url,

@@ -9,13 +9,13 @@ import {
 
 import { timeAgo } from '../../utils/dates'
 import { useAuthSession } from '../../routes/plugin@auth'
-import { procedures } from '../../procedures'
-import type { LikeInput } from '../../procedures/likes'
-import type { GetManyPosts } from '../../procedures/posts'
+import { api } from '../../api'
+import type { LikeInput } from '../../api/likes'
+import type { GetManyPosts } from '../../api/posts'
 import Button from './Button'
 
 const likePost = server$(async function ({ postId, action }: LikeInput) {
-  return procedures(this).likes.mutation.like({ postId, action })
+  return api(this).likes.mutation.like({ postId, action })
 })
 
 interface Props {

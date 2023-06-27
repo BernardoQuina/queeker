@@ -3,7 +3,7 @@ import { postsProcedures } from './posts'
 import { likesProcedures } from './likes'
 import { usersProcedures } from './user'
 
-export const procedures = (req: RequestEventLoader | RequestEventBase) => {
+export const api = (req: RequestEventLoader | RequestEventBase) => {
   return {
     posts: postsProcedures(req),
     likes: likesProcedures(req),
