@@ -1,0 +1,1 @@
+ALTER TABLE `posts` DROP COLUMN `repost_of_post_id`;

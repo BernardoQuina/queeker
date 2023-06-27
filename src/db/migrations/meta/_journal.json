@@ -64,6 +64,13 @@
       "when": 1685042930355,
       "tag": "0008_ordinary_alice",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1687885071576,
+      "tag": "0009_heavy_excalibur",
+      "breakpoints": true
     }
   ]
 }
