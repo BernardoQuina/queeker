@@ -7,5 +7,5 @@ export default {
   out: './src/db/migrations',
   schema: './src/db/schema.ts',
   breakpoints: true,
-  connectionString: process.env.DATABASE_URL,
+  dbCredentials: { connectionString: process.env.DATABASE_URL || '' },
 } satisfies Config
