@@ -9,7 +9,7 @@
 ![Lighthouse score](public/images/lighthouse.png)
 ![home page network load time (sub 200ms)](public/images/network.png)
 
-Queeker is completely serverless, using [planetscale](https://planetscale.com) mysql db, and deploying the [qwik](https://qwik.builder.io) app on [vercel](https://vercel.com) edge functions.
+Queeker is completely serverless, using [planetscale](https://planetscale.com) mysql db, and deploying [qwik](https://qwik.builder.io) on [vercel](https://vercel.com) edge functions.
 
 - Using vercel edge functions allows the app to avoid cold starts (lightweight nodejs runtime);
 - [drizzle](https://orm.drizzle.team) is a typescript only lightweight ORM with no need of starting a rust binary (like Prisma) on every request;
