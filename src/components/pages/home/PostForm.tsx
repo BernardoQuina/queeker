@@ -9,6 +9,7 @@ import Spinner from '../../global/Spinner'
 import Toast from '../../global/Toast'
 import { api } from '../../../api'
 import type { AddPostInput, GetManyPosts } from '../../../api/posts'
+import CircularProgress from '../../global/CircularProgress'
 
 const addPost = server$(async function ({ content }: AddPostInput) {
   return api(this).posts.mutation.add({ content })
@@ -21,8 +22,12 @@ interface Props {
 
 export default component$(({ posts, user }: Props) => {
   const content = useSignal('')
-  const loading = useSignal(false)
+  const inputFocused = useSignal(false)
 
+  const charLimit = 280
+  const charLeft = charLimit - content.value.length
+
+  const loading = useSignal(false)
   const errorMessage = useSignal('')
   const toastVisible = useSignal(false)
 
@@ -38,10 +43,25 @@ export default component$(({ posts, user }: Props) => {
         textareaRef.value.style.height = `${textareaRef.value.scrollHeight}px`
       }
     }
-
     textareaRef.value?.addEventListener('input', setHeight)
 
-    cleanup(() => textareaRef.value?.removeEventListener('input', setHeight))
+    const focus = () => (inputFocused.value = true)
+    textareaRef.value?.addEventListener('focus', focus)
+
+    const blur = () => {
+      inputFocused.value = false
+
+      if (content.value.length === 0) {
+        textareaRef.value?.style.removeProperty('height')
+      }
+    }
+    textareaRef.value?.addEventListener('blur', blur)
+
+    cleanup(() => {
+      textareaRef.value?.removeEventListener('input', setHeight)
+      textareaRef.value?.removeEventListener('focus', focus)
+      textareaRef.value?.removeEventListener('blur', blur)
+    })
   })
 
   return (
@@ -83,16 +103,39 @@ export default component$(({ posts, user }: Props) => {
         ref={textareaRef}
         bind:value={content}
         placeholder="What is happening?!"
-        class="min-h-[5.25rem] flex-grow resize-none overflow-hidden bg-transparent px-3 pb-2 pt-7 text-xl focus:outline-none"
+        class="mt-5 flex-grow resize-none overflow-hidden bg-transparent px-3 py-2 text-xl focus:outline-none"
+        rows={1}
       />
-      <Button
-        disabled={loading.value || content.value.length === 0}
-        type="submit"
-        class="mt-[1.4rem] h-10 w-[5.5rem] font-semibold"
-        aria-label="post"
-      >
-        {loading.value ? <Spinner /> : 'Queek'}
-      </Button>
+      <div class="flex flex-col justify-between">
+        <Button
+          disabled={
+            loading.value ||
+            content.value.length === 0 ||
+            content.value.length > charLimit
+          }
+          type="submit"
+          class="mt-[1.4rem] h-10 w-[5.5rem] font-semibold"
+          aria-label="post"
+        >
+          {loading.value ? <Spinner /> : 'Queek'}
+        </Button>
+        {inputFocused.value || content.value.length > 0 ? (
+          <div class="mb-3 mt-3 flex">
+            <CircularProgress current={content.value.length} />
+            <span
+              class={`${
+                charLeft <= 0
+                  ? 'text-red-600'
+                  : charLeft <= 20
+                  ? 'text-yellow-400'
+                  : 'text-stone-500 dark:text-gray-400'
+              } ml-2`}
+            >
+              {charLeft}
+            </span>
+          </div>
+        ) : null}
+      </div>
       <Toast
         stage={stage}
         message={errorMessage.value}

@@ -26,7 +26,7 @@ export default component$(({ message, stage, onClose }: Props) => {
             : 'translateX(-50%) translateY(-100px)',
       }}
     >
-      <div class="flex h-8 w-8 items-center justify-center rounded-md bg-red-100 text-xl text-red-500 dark:bg-red-600 dark:bg-opacity-60">
+      <div class="flex min-h-[2rem] min-w-[2rem] items-center justify-center rounded-md bg-red-100 text-xl text-red-500 dark:bg-red-600 dark:bg-opacity-60">
         <LuX />
       </div>
       <div class="mr-auto px-4 text-sm font-normal text-stone-500 dark:text-gray-400">
@@ -34,7 +34,7 @@ export default component$(({ message, stage, onClose }: Props) => {
       </div>
       <Button
         variant="ghost"
-        class="h-10 w-10 items-center justify-center text-xl text-stone-500 dark:text-gray-400"
+        class="min-h-[2.5rem] min-w-[2.5rem] items-center justify-center text-xl text-stone-500 dark:text-gray-400"
         type="button"
         aria-label="Close toast"
         onClick$={onClose}

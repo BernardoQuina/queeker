@@ -30,7 +30,10 @@ export type GetPostByIdParams = z.infer<typeof getByIdParams>
 // ------------
 
 const addPostInput = z.object({
-  content: z.string(),
+  content: z
+    .string()
+    .min(1, 'Post must be at least 1 character')
+    .max(280, 'Post is too long, must be 280 characters or less'),
   replyToPostId: z.number().optional(),
 })
 export type AddPostInput = z.infer<typeof addPostInput>
@@ -179,6 +182,15 @@ export const postsApi = ({ cookie, env }: RequestEventLoader | RequestEventBase)
       // ------------
       add: async ({ content, replyToPostId }: AddPostInput) => {
         try {
+          // Validate content with zod and return error if invalid
+          const validationResult = addPostInput.safeParse({ content, replyToPostId })
+
+          if (!validationResult.success) {
+            const message = validationResult.error.issues[0].message
+
+            return { code: 400, message, data: null }
+          }
+
           // Get id from session
           const userId = await getIdFromToken({ cookie, env })
 
