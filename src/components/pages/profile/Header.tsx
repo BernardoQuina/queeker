@@ -41,7 +41,7 @@ export default component$(({ user }: Props) => {
       </header>
       <section class="mt-[4.1rem] border-b-[1px] pb-3">
         <Image
-          src="https://qwik-drizzle.vercel.app/images/sql.jpeg"
+          src="https://queeker.vercel.app/images/sql.jpeg"
           alt="banner meme"
           width={600}
           height={160}
