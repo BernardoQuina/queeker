@@ -1,12 +1,21 @@
-# Qwik City App ⚡️
+# Queeker
 
-- [Qwik Docs](https://qwik.builder.io/)
-- [Discord](https://qwik.builder.io/chat)
-- [Qwik GitHub](https://github.com/BuilderIO/qwik)
-- [@QwikDev](https://twitter.com/QwikDev)
-- [Vite](https://vitejs.dev/)
+[queeker](https://queeker.vercel.app) is a twitter clone built with Qwik and drizzle ORM, inspired by [chirp](https://🐦.t3.gg)
 
 ---
+
+## Speed (on serverless)
+
+![Lighthouse score](public/lighthouse.png)
+![home page network load time (sub 200ms)](public/network.png)
+
+Queeker is completely serverless, using [planetscale](https://planetscale.com) mysql db, and deploying the [qwik](https://qwik.builder.io) app on [vercel](https://vercel.com) edge functions.
+
+- Using vercel edge functions allows the app to avoid cold starts (lightweight nodejs runtime);
+- [drizzle](https://orm.drizzle.team) is a typescript only lightweight ORM with no need of starting a rust binary (like Prisma) on every request;
+- Thanks to qwik resumability we can serve fully SSR pages that are almost instantly interactive (no need to wait for hydration);
+
+All this results in a perfect Lighthouse score, and consistent 100-200ms page loads (even with SSR posts)
 
 ## Project Structure
 
@@ -66,7 +75,7 @@ npm run build # or `yarn build`
 
 ## Vercel Edge
 
-This starter site is configured to deploy to [Vercel Edge Functions](https://vercel.com/docs/concepts/functions/edge-functions), which means it will be rendered at an edge location near to your users.
+This site is configured to deploy to [Vercel Edge Functions](https://vercel.com/docs/concepts/functions/edge-functions), which means it will be rendered at an edge location near to your users.
 
 ## Installation
 
