@@ -6,8 +6,8 @@
 
 ## Speed (on serverless)
 
-![Lighthouse score](public/lighthouse.png)
-![home page network load time (sub 200ms)](public/network.png)
+![Lighthouse score](public/images/lighthouse.png)
+![home page network load time (sub 200ms)](public/images/network.png)
 
 Queeker is completely serverless, using [planetscale](https://planetscale.com) mysql db, and deploying the [qwik](https://qwik.builder.io) app on [vercel](https://vercel.com) edge functions.
 
